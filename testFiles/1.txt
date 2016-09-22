@@ -1,0 +1,5 @@
+text in 1 file.
+multiple text
+
+
+some /n

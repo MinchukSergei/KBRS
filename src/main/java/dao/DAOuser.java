@@ -2,12 +2,12 @@ package dao;
 
 import entities.User;
 
-/**
- * Created by USER on 22.09.2016.
- */
+import java.sql.SQLException;
+
 public interface DAOuser {
-    void registerUser(User user);
-    void setKey(User user);
-    boolean isRegistered(String login);
-    boolean isConfirmed(String password);
+    void registerUser(User user) throws SQLException;
+    void setPrKey(User user) throws SQLException;
+    void setSessionKey(User user) throws SQLException;
+    User isConfirmed(String login, String pass) throws SQLException;
+    String getPrKey(User user) throws SQLException;
 }

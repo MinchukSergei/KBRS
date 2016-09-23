@@ -4,8 +4,8 @@ import javax.crypto.*;
 import java.security.*;
 import java.util.Arrays;
 
-public class RSA {
-    public static final String RSA = "RSA";
+public class RSA extends CryptoSystem {
+
 
     public KeyPair generateKeyPair() {
         KeyPair keyPair = null;

@@ -3,8 +3,9 @@ package entities;
 public class User {
     private String userLogin;
     private String userPassword;
-    private String userKey;
+    private String userPrKey;
     private String userEmail;
+    private String userSessionKey;
 
     public String getUserLogin() {
         return userLogin;
@@ -22,12 +23,12 @@ public class User {
         this.userPassword = userPassword;
     }
 
-    public String getUserKey() {
-        return userKey;
+    public String getUserPrKey() {
+        return userPrKey;
     }
 
-    public void setUserKey(String userKey) {
-        this.userKey = userKey;
+    public void setUserPrKey(String userPrKey) {
+        this.userPrKey = userPrKey;
     }
 
     public String getUserEmail() {
@@ -36,6 +37,14 @@ public class User {
 
     public void setUserEmail(String userEmail) {
         this.userEmail = userEmail;
+    }
+
+    public String getUserSessionKey() {
+        return userSessionKey;
+    }
+
+    public void setUserSessionKey(String userSessionKey) {
+        this.userSessionKey = userSessionKey;
     }
 
     @Override
@@ -47,7 +56,9 @@ public class User {
 
         if (userLogin != null ? !userLogin.equals(user.userLogin) : user.userLogin != null) return false;
         if (userPassword != null ? !userPassword.equals(user.userPassword) : user.userPassword != null) return false;
-        return userKey != null ? userKey.equals(user.userKey) : user.userKey == null;
+        if (userPrKey != null ? !userPrKey.equals(user.userPrKey) : user.userPrKey != null) return false;
+        if (userEmail != null ? !userEmail.equals(user.userEmail) : user.userEmail != null) return false;
+        return userSessionKey != null ? userSessionKey.equals(user.userSessionKey) : user.userSessionKey == null;
 
     }
 
@@ -55,7 +66,9 @@ public class User {
     public int hashCode() {
         int result = userLogin != null ? userLogin.hashCode() : 0;
         result = 31 * result + (userPassword != null ? userPassword.hashCode() : 0);
-        result = 31 * result + (userKey != null ? userKey.hashCode() : 0);
+        result = 31 * result + (userPrKey != null ? userPrKey.hashCode() : 0);
+        result = 31 * result + (userEmail != null ? userEmail.hashCode() : 0);
+        result = 31 * result + (userSessionKey != null ? userSessionKey.hashCode() : 0);
         return result;
     }
 }

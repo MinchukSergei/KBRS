@@ -12,6 +12,11 @@ import java.security.NoSuchAlgorithmException;
 public abstract class CryptoSystem {
     private Cipher cipher;
 
+    //Crypto system types
+    public static final String AES = "AES";
+    public static final String RSA = "RSA";
+    //
+
     public void initCipher(String cryptoSystem) {
         try {
             cipher = Cipher.getInstance(cryptoSystem);

@@ -7,7 +7,7 @@ import java.security.*;
  * Created by USER on 22.09.2016.
  */
 public class AES extends CryptoSystem {
-    public static final String AES = "AES";
+
 
     public SecretKey generateKey() {
         SecretKey key = null;

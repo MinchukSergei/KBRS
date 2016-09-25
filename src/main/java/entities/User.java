@@ -1,11 +1,14 @@
 package entities;
 
+import java.util.Arrays;
+
 public class User {
     private String userLogin;
     private String userPassword;
-    private String userPrKey;
+    private byte[] userPrKey;
     private String userEmail;
-    private String userSessionKey;
+    private byte[] userSessionKey;
+    private byte[] userPubKey;
 
     public String getUserLogin() {
         return userLogin;
@@ -23,11 +26,11 @@ public class User {
         this.userPassword = userPassword;
     }
 
-    public String getUserPrKey() {
+    public byte[] getUserPrKey() {
         return userPrKey;
     }
 
-    public void setUserPrKey(String userPrKey) {
+    public void setUserPrKey(byte[] userPrKey) {
         this.userPrKey = userPrKey;
     }
 
@@ -39,12 +42,20 @@ public class User {
         this.userEmail = userEmail;
     }
 
-    public String getUserSessionKey() {
+    public byte[] getUserSessionKey() {
         return userSessionKey;
     }
 
-    public void setUserSessionKey(String userSessionKey) {
+    public void setUserSessionKey(byte[] userSessionKey) {
         this.userSessionKey = userSessionKey;
+    }
+
+    public byte[] getUserPubKey() {
+        return userPubKey;
+    }
+
+    public void setUserPubKey(byte[] userPubKey) {
+        this.userPubKey = userPubKey;
     }
 
     @Override
@@ -56,9 +67,10 @@ public class User {
 
         if (userLogin != null ? !userLogin.equals(user.userLogin) : user.userLogin != null) return false;
         if (userPassword != null ? !userPassword.equals(user.userPassword) : user.userPassword != null) return false;
-        if (userPrKey != null ? !userPrKey.equals(user.userPrKey) : user.userPrKey != null) return false;
+        if (!Arrays.equals(userPrKey, user.userPrKey)) return false;
         if (userEmail != null ? !userEmail.equals(user.userEmail) : user.userEmail != null) return false;
-        return userSessionKey != null ? userSessionKey.equals(user.userSessionKey) : user.userSessionKey == null;
+        if (!Arrays.equals(userSessionKey, user.userSessionKey)) return false;
+        return Arrays.equals(userPubKey, user.userPubKey);
 
     }
 
@@ -66,9 +78,10 @@ public class User {
     public int hashCode() {
         int result = userLogin != null ? userLogin.hashCode() : 0;
         result = 31 * result + (userPassword != null ? userPassword.hashCode() : 0);
-        result = 31 * result + (userPrKey != null ? userPrKey.hashCode() : 0);
+        result = 31 * result + Arrays.hashCode(userPrKey);
         result = 31 * result + (userEmail != null ? userEmail.hashCode() : 0);
-        result = 31 * result + (userSessionKey != null ? userSessionKey.hashCode() : 0);
+        result = 31 * result + Arrays.hashCode(userSessionKey);
+        result = 31 * result + Arrays.hashCode(userPubKey);
         return result;
     }
 }

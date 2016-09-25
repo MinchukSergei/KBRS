@@ -1,38 +1,89 @@
 package client;
 
-import dao.DAOuser;
-import dao.impl.DAOuserImpl;
+import client.gui.ClientGui;
+import client.impl.ClientAPIImpl;
 import entities.User;
-import mail.MailSender;
 import security.AES;
-import security.Base64;
 import security.CryptoSystem;
 import security.RSA;
+import util.ClientCommands;
+import util.ResourceBundleManager;
 
 import javax.crypto.SecretKey;
-import javax.mail.*;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.util.Properties;
+import java.io.IOException;
+import java.net.Socket;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 
-public class TestClient {
-    public static void main(String[] args) throws InvalidKeyException {
-        RSA rsa = new RSA();
-        rsa.initCipher(CryptoSystem.RSA);
-        KeyPair kp = rsa.generateKeyPair();
+public  class TestClient {
+    static User user;
+    private static SecretKey encodePrivateKey(PrivateKey key) {
         AES aes = new AES();
         aes.initCipher(CryptoSystem.AES);
-        SecretKey key = aes.generateKey();
-        String b64key = Base64.encodeToBase64(key.getEncoded());
+        SecretKey secretKey = aes.generateKey();
+        byte[] encodedKey = aes.encode(key.getEncoded(), secretKey);
+        user.setUserPrKey(encodedKey);
+        return secretKey;
+    }
 
-        byte[] encodedKey = rsa.encode(b64key, kp.getPublic());
-        int y = encodedKey.length;
+    public static void main(String[] args) {
+        Socket socket;
+        ClientAPIImpl clientAPI = null;
+        try {
+            socket = new Socket(
+                    ResourceBundleManager.getByName("server.host.address"),
+                    Integer.parseInt(ResourceBundleManager.getByName("server.port.number"))
+                    );
+            clientAPI = new ClientAPIImpl(socket);
+            clientAPI.setFromServer(socket.getInputStream());
+            clientAPI.setToServer(socket.getOutputStream());
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            return;
+        }
 
-        DAOuser daOuser = new DAOuserImpl();
-        User user;
+        ClientGui clientGui = new ClientGui(clientAPI);
+        clientAPI.setMainFrame(clientGui);
+        clientGui.setDefaultSettings();
+//        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+//        try {
+//            String line = bufferedReader.readLine();
+//        } catch (IOException e) {
+//
+//        }
+
+        //reader.skip(10);
+
+        //System.out.println(password);
+
+//        byte[] out = null;
+//        RSA rsa = new RSA();
+//        rsa.initCipher(CryptoSystem.RSA);
+//        KeyPair pair = rsa.generateKeyPair();
+//        PrivateKey pk = pair.getPrivate();
+//
+//        user = new User();
 //        user.setUserLogin("pes");
+//        user.setUserEmail("minchuk94@mail.ru");
+//        SecretKey key = encodePrivateKey(pk);
+//
+//        MailSender mailSender = new MailSender();
+//
+//        try {
+//            Message msg = mailSender.createMessage(user.getUserEmail(), "test key",
+//                    Base64.encodeToBase64(key.getEncoded()));
+//            mailSender.sendMessage(msg);
+//        } catch (MessagingException e) {
+//            e.printStackTrace();
+//        }
+//
+//        DAOuser daOuser = new DAOuserImpl();
+//        try {
+//            daOuser.setPrKey(user);
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
 //        user.setUserPassword("gau");
 
 

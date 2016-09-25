@@ -1,14 +1,15 @@
 package client;
 
-import entities.User;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.sql.SQLException;
 
 /**
  * Created by USER on 23.09.2016.
  */
 public interface ClientAPI {
     void sendKeyAndReceiveSessionKey();
-    void registerNewUser(User user);
-    void authenticateUser(String login, String pass);
-    void useKeyFromMail(String key);
-    void sendFilename(String filename);
+    boolean sendFilename(String filename) throws IOException;
+    String receiveFile() throws IOException, NoSuchAlgorithmException, SQLException, InvalidKeySpecException;
 }

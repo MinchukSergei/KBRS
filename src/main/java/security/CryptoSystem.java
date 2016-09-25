@@ -27,11 +27,11 @@ public abstract class CryptoSystem {
         }
     }
 
-    public byte[] encode(String strToEncode, Key key) {
+    public byte[] encode(byte[] toEncode, Key key) {
         byte[] encodedMessage = new byte[0];
         try {
             cipher.init(Cipher.ENCRYPT_MODE, key);
-            encodedMessage = cipher.doFinal(strToEncode.getBytes());
+            encodedMessage = cipher.doFinal(toEncode);
         } catch (InvalidKeyException e) {
             System.out.println(e.getMessage());
         } catch (BadPaddingException e) {
@@ -42,12 +42,11 @@ public abstract class CryptoSystem {
         return encodedMessage;
     }
 
-    public String decodeSessionKey(byte[] encodedStr, Key key) {
-        String decodedKey = "";
+    public byte[] decode(byte[] toDecode, Key key) {
+        byte[] decodedMsg = new byte[0];
         try {
             cipher.init(Cipher.DECRYPT_MODE, key);
-            byte[] decodedMsg = cipher.doFinal(encodedStr);
-            decodedKey = new String(decodedMsg);
+            decodedMsg = cipher.doFinal(toDecode);
         } catch (InvalidKeyException e) {
             System.out.println(e.getMessage());
         } catch (BadPaddingException e) {
@@ -55,6 +54,6 @@ public abstract class CryptoSystem {
         } catch (IllegalBlockSizeException e) {
             System.out.println(e.getMessage());
         }
-        return decodedKey;
+        return decodedMsg;
     }
 }

@@ -13,7 +13,8 @@ public class AES extends CryptoSystem {
         SecretKey key = null;
         try {
             KeyGenerator keyGenerator = KeyGenerator.getInstance(AES);
-            keyGenerator.init(128);
+            SecureRandom random = new SecureRandom();
+            keyGenerator.init(128, random);
             key = keyGenerator.generateKey();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();

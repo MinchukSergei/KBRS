@@ -38,7 +38,7 @@ public class LoginFrame extends ActionFrame {
                 user.setUserPassword(passwordField.getText());
                 try {
                     user = daOuser.isConfirmed(user);
-                    daOuser.getKeys(user);
+
                 } catch (SQLException ex) {
                     JOptionPane.showMessageDialog(LoginFrame.this, ex.getMessage());
                 }
@@ -47,6 +47,11 @@ public class LoginFrame extends ActionFrame {
                     return;
                 } else {
                     clientAPI.setAuthenticated(user);
+                    try {
+                        daOuser.getKeys(user);
+                    } catch (SQLException e1) {
+                        JOptionPane.showMessageDialog(LoginFrame.this, e1.getMessage());
+                    }
                 }
                 int n = JOptionPane.showConfirmDialog(
                         LoginFrame.this,

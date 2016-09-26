@@ -4,6 +4,8 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.IvParameterSpec;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
@@ -14,6 +16,7 @@ public abstract class CryptoSystem {
 
     //Crypto system types
     public static final String AES = "AES";
+    public static final String AES_CBC = "AES/CBC/PKCS5Padding";
     public static final String RSA = "RSA";
     //
 
@@ -26,6 +29,7 @@ public abstract class CryptoSystem {
             System.out.println(e.getMessage());
         }
     }
+
 
     public byte[] encode(byte[] toEncode, Key key) {
         byte[] encodedMessage = new byte[0];
@@ -40,6 +44,40 @@ public abstract class CryptoSystem {
             System.out.println(e.getMessage());
         }
         return encodedMessage;
+    }
+
+    public byte[] encode(byte[] toEncode, Key key, IvParameterSpec iv) {
+        byte[] encodedMessage = new byte[0];
+        try {
+            cipher.init(Cipher.ENCRYPT_MODE, key, iv);
+            encodedMessage = cipher.doFinal(toEncode);
+        } catch (InvalidKeyException e) {
+            System.out.println(e.getMessage());
+        } catch (BadPaddingException e) {
+            System.out.println(e.getMessage());
+        } catch (IllegalBlockSizeException e) {
+            System.out.println(e.getMessage());
+        } catch (InvalidAlgorithmParameterException e) {
+            System.out.println(e.getMessage());
+        }
+        return encodedMessage;
+    }
+
+    public byte[] decode(byte[] toDecode, Key key, IvParameterSpec iv) {
+        byte[] decodedMsg = new byte[0];
+        try {
+            cipher.init(Cipher.DECRYPT_MODE, key, iv);
+            decodedMsg = cipher.doFinal(toDecode);
+        } catch (InvalidKeyException e) {
+            System.out.println(e.getMessage());
+        } catch (BadPaddingException e) {
+            System.out.println(e.getMessage());
+        } catch (IllegalBlockSizeException e) {
+            System.out.println(e.getMessage());
+        } catch (InvalidAlgorithmParameterException e) {
+            System.out.println(e.getMessage());
+        }
+        return decodedMsg;
     }
 
     public byte[] decode(byte[] toDecode, Key key) {

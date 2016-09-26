@@ -11,7 +11,8 @@ public class RSA extends CryptoSystem {
         KeyPair keyPair = null;
         try {
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(RSA);
-            keyPairGenerator.initialize(2048);
+            SecureRandom random = new SecureRandom();
+            keyPairGenerator.initialize(2048, random);
             keyPair = keyPairGenerator.genKeyPair();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();

@@ -26,4 +26,13 @@ public enum ClientCommands {
     public void setValue(int value) {
         this.value = value;
     }
+
+    public static ClientCommands getCommandByValue(int value) {
+        for (ClientCommands c: ClientCommands.values()) {
+            if (c.getValue() == value) {
+                return c;
+            }
+        }
+        return null;
+    }
 }

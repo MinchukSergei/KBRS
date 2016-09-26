@@ -7,6 +7,8 @@ import server.impl.ServerAPIImpl;
 import util.ResourceBundleManager;
 
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -18,32 +20,6 @@ import java.nio.file.Paths;
  */
 public class TestServer {
     public static void main(String[] args) {
-//        Path currentRelativePath = Paths.get("");
-//        String s = currentRelativePath.toAbsolutePath().toString();
-//        File file = new File(s + "\\testFiles\\1.txt");
-//        AES aes = new AES();
-//        aes.initCipher(CryptoSystem.AES);
-//        SecretKey key = aes.generateKey();
-//
-//        if (file.exists()) {
-//            InputStream fileStream = null;
-//            try {
-//                fileStream = new FileInputStream(file);
-//
-//            byte[] partFile = new byte[128];
-//            while (fileStream.read(partFile) != -1) {
-//                byte[] encPart = aes.encode(partFile, key);
-//                int y = 0;
-//            }
-//
-//            } catch (FileNotFoundException e) {
-//                e.printStackTrace();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-
-
         int port = Integer.parseInt(ResourceBundleManager.getByName("server.port.number"));
         try {
             ServerSocket serverSocket = new ServerSocket(port);

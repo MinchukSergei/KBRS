@@ -15,6 +15,7 @@ import util.ResourceBundleManager;
 import util.ServerCommands;
 
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -36,6 +37,14 @@ public class ClientAPIImpl implements ClientAPI {
 
     private InputStream fromServer;
     private OutputStream toServer;
+
+    public Socket getSocket() {
+        return socket;
+    }
+
+    public void setSocket(Socket socket) {
+        this.socket = socket;
+    }
 
     public InputStream getFromServer() {
         return fromServer;
@@ -95,9 +104,11 @@ public class ClientAPIImpl implements ClientAPI {
         byte[] receivedSessionKey = new byte[0];
         try {
             sendRSAKey(publicKey);
+            mainFrame.getLogTextArea().append("Sending to server public RSA KEY\n");
             receivedSessionKey = receiveSessionEncodedKey();
+            mainFrame.getLogTextArea().append("Receiving from server encoded session key\n");
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            mainFrame.getLogTextArea().append(e.getMessage() + "\n");
             return;
         }
         DAOuser daOuser = new DAOuserImpl();
@@ -111,6 +122,7 @@ public class ClientAPIImpl implements ClientAPI {
         PrivateKey privateKey = keyPair.getPrivate();
         SecretKey secretKey = encodePrivateKey(privateKey);
         try {
+            mainFrame.getLogTextArea().append("Sending secret key to email: " + authenticated.getUserEmail() + "\n");
             sendSecretKeyByEmail(secretKey);
         } catch (MessagingException e) {
             JOptionPane.showConfirmDialog(mainFrame, e.getMessage());
@@ -118,6 +130,7 @@ public class ClientAPIImpl implements ClientAPI {
         }
 
         try {
+            mainFrame.getLogTextArea().append("Saving keys to database.\n");
             daOuser.setSessionKey(authenticated);
             daOuser.setPubKey(authenticated);
             daOuser.setPrKey(authenticated);
@@ -170,6 +183,7 @@ public class ClientAPIImpl implements ClientAPI {
     }
 
     public boolean sendFilename(String filename) throws IOException {
+        mainFrame.getLogTextArea().append("Sending to server filename.\n");
         if (emailKeyB64 == null) {
             JOptionPane.showMessageDialog(mainFrame, "Input email key.");
             return false;
@@ -185,15 +199,10 @@ public class ClientAPIImpl implements ClientAPI {
     }
 
     public String receiveFile() throws IOException, NoSuchAlgorithmException, SQLException, InvalidKeySpecException {
+        mainFrame.getLogTextArea().append("Receiving from server file.\n");
         int command = fromServer.read();
         String file = "";
-        ServerCommands target = null;
-        for (ServerCommands c: ServerCommands.values()) {
-            if (c.getValue() == command) {
-                target = c;
-                break;
-            }
-        }
+        ServerCommands target = ServerCommands.getCommandByValue(command);
 
         switch (target) {
             case SESSION_KEY_IS_NULL:
@@ -210,6 +219,7 @@ public class ClientAPIImpl implements ClientAPI {
     }
 
     private String receiveAndDecodeFile() throws IOException, SQLException, NoSuchAlgorithmException {
+        mainFrame.getLogTextArea().append("Encoding file from server.\n");
         StringBuffer buffer = new StringBuffer();
         AES aes = new AES();
         aes.initCipher(CryptoSystem.AES);
@@ -240,6 +250,8 @@ public class ClientAPIImpl implements ClientAPI {
 
         byte[] sessionKey = rsa.decode(authenticated.getUserSessionKey(), privateKey);
 
+        //AES aes1 = new AES();
+        aes.initCipher(CryptoSystem.AES_CBC);
         while (true) {
             int size = fromServer.read();
             if (size == 0) {
@@ -251,9 +263,13 @@ public class ClientAPIImpl implements ClientAPI {
                 }
             }
             byte[] encPartFile = new byte[size];
+            byte[] iv = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            IvParameterSpec ivspec = new IvParameterSpec(iv);
+
             fromServer.read(encPartFile, 0, size);
+
             String partFileString = new String(aes.decode(encPartFile,
-                    new SecretKeySpec(sessionKey, CryptoSystem.AES)));
+                    new SecretKeySpec(sessionKey, CryptoSystem.AES), ivspec));
             buffer.append(partFileString);
         }
     }

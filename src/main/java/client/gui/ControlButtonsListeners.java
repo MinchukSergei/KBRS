@@ -103,8 +103,15 @@ public class ControlButtonsListeners {
                 if (!isAuthenticated()) {
                     return;
                 }
-                clientAPI.sendKeyAndReceiveSessionKey();
-                clientAPI.setEmailKeyB64(null);
+                mainFrame.setEnabled(false);
+                new Thread() {
+                    @Override
+                    public void run() {
+                        clientAPI.sendKeyAndReceiveSessionKey();
+                        clientAPI.setEmailKeyB64(null);
+                    }
+                }.start();
+                mainFrame.setEnabled(true);
             }
         };
     }

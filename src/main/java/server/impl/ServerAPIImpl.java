@@ -8,6 +8,7 @@ import util.ClientCommands;
 import util.ServerCommands;
 
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Path;
@@ -98,7 +99,7 @@ public class ServerAPIImpl implements ServerAPI {
 
     private void generateAndSetSessionKey() {
         AES aes = new AES();
-        aes.initCipher(CryptoSystem.AES);
+        aes.initCipher(CryptoSystem.AES_CBC);
         sessionKey = aes.generateKey();
     }
 
@@ -128,12 +129,16 @@ public class ServerAPIImpl implements ServerAPI {
             }
             if (error == ClientCommands.CORRECT_FILE_RECEIVING.getValue()) {
                 AES aes = new AES();
-                aes.initCipher(CryptoSystem.AES);
+                aes.initCipher(CryptoSystem.AES_CBC);
+
 
                 InputStream fileStream = new FileInputStream(file);
                 byte[] partFile = new byte[ServerCommands.SERVER_PART_FILE_LENGTH.getValue()];
+
+                byte[] iv = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                IvParameterSpec ivspec = new IvParameterSpec(iv);
                 while (fileStream.read(partFile) != -1) {
-                    byte[] encPartFile = aes.encode(partFile, sessionKey);
+                    byte[] encPartFile = aes.encode(partFile, sessionKey, ivspec);
                     toClient.write(encPartFile.length);
                     toClient.write(encPartFile);
                 }

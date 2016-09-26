@@ -14,9 +14,18 @@ import java.util.List;
 public class ClientGui extends JFrame {
     private JPanel controlPanel;
     private JPanel logPanel;
+    private JTextArea logTextArea;
     private ClientAPIImpl clientAPI;
 
     private JTextField filenameTextField;
+
+    public JTextArea getLogTextArea() {
+        return logTextArea;
+    }
+
+    public void setLogTextArea(JTextArea logTextArea) {
+        this.logTextArea = logTextArea;
+    }
 
     public JTextField getFilenameTextField() {
         return filenameTextField;
@@ -63,7 +72,7 @@ public class ClientGui extends JFrame {
         logPanel = new JPanel();
         logPanel.setLayout(new BorderLayout());
 
-        JTextArea logTextArea = new JTextArea();
+        logTextArea = new JTextArea();
         logTextArea.setEditable(false);
         JScrollPane logScrollPane = new JScrollPane(logTextArea);
 

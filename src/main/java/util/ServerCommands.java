@@ -32,4 +32,13 @@ public enum  ServerCommands {
     public void setValue(int value) {
         this.value = value;
     }
+
+    public static ServerCommands getCommandByValue(int value) {
+        for (ServerCommands c: ServerCommands.values()) {
+            if (c.getValue() == value) {
+                return c;
+            }
+        }
+        return null;
+    }
 }

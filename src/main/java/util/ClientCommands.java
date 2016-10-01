@@ -6,6 +6,7 @@ package util;
 public enum ClientCommands {
     SEND_PUBLIC_RSA_KEY(0),
     SEND_FILENAME(1),
+    SEND_CURRENT_PUBLIC_RSA_KEY(2),
 
     //FILE READING
     CORRECT_FILE_RECEIVING(10),

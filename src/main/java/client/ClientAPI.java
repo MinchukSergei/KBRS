@@ -12,4 +12,5 @@ public interface ClientAPI {
     void sendKeyAndReceiveSessionKey();
     boolean sendFilename(String filename) throws IOException;
     String receiveFile() throws IOException, NoSuchAlgorithmException, SQLException, InvalidKeySpecException;
+    void sendCurrentRSAKeyAndReceiveSessionKey();
 }

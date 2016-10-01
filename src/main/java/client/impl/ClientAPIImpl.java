@@ -140,6 +140,8 @@ public class ClientAPIImpl implements ClientAPI {
         }
     }
 
+
+
     private KeyPair genKeyPair() {
         RSA rsa = new RSA();
         rsa.initCipher(RSA.RSA);
@@ -160,6 +162,8 @@ public class ClientAPIImpl implements ClientAPI {
         }
         return encodedSessionKey;
     }
+
+
 
     //It returns secretKey to send it by email
     private SecretKey encodePrivateKey(PrivateKey key) {
@@ -216,6 +220,49 @@ public class ClientAPIImpl implements ClientAPI {
                 return null;
         }
         return file;
+    }
+
+    public void sendCurrentRSAKeyAndReceiveSessionKey() {
+        if (socket == null) {
+            JOptionPane.showMessageDialog(mainFrame, "Server is not available.");
+            return;
+        }
+        if (authenticated.getUserPubKey() == null || authenticated.getUserPrKey() == null) {
+            JOptionPane.showMessageDialog(mainFrame, "Generate new keys.");
+            return;
+        }
+
+        byte[] publicKey = authenticated.getUserPubKey();
+
+        byte[] receivedSessionKey = new byte[0];
+        try {
+            sendCurrentPublicRSAKey(publicKey);
+            mainFrame.getLogTextArea().append("Sending to server current public RSA KEY\n");
+            receivedSessionKey = receiveSessionEncodedKey();
+            mainFrame.getLogTextArea().append("Receiving from server encoded session key\n");
+        } catch (IOException e) {
+            mainFrame.getLogTextArea().append(e.getMessage() + "\n");
+            return;
+        }
+        DAOuser daOuser = new DAOuserImpl();
+        if (receivedSessionKey == null) {
+            JOptionPane.showConfirmDialog(mainFrame, "Session key wasn't received.");
+            return;
+        }
+        authenticated.setUserSessionKey(receivedSessionKey);
+
+        try {
+            mainFrame.getLogTextArea().append("Saving keys to database.\n");
+            daOuser.setSessionKey(authenticated);
+        } catch (SQLException e) {
+            JOptionPane.showConfirmDialog(mainFrame, e.getMessage());
+            return;
+        }
+    }
+
+    private void sendCurrentPublicRSAKey(byte[] publicKey) throws IOException {
+        toServer.write(ClientCommands.SEND_CURRENT_PUBLIC_RSA_KEY.getValue());
+        toServer.write(publicKey);
     }
 
     private String receiveAndDecodeFile() throws IOException, SQLException, NoSuchAlgorithmException {

@@ -47,6 +47,7 @@ public class ClientThread implements Runnable{
                 }
                 switch (target) {
                     case SEND_PUBLIC_RSA_KEY:
+                    case SEND_CURRENT_PUBLIC_RSA_KEY:
                         System.out.println("Client " + serverAPI.getSocket().getPort() +
                                 " sends public RSA key.");
                         serverAPI.receivePublicRSAKey();

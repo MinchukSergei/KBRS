@@ -63,6 +63,24 @@ public class ControlButtonsListeners {
         };
     }
 
+    public ActionListener getSendCurrentPublicRSAKey() {
+        return new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (!isAuthenticated()) {
+                    return;
+                }
+                mainFrame.setEnabled(false);
+                new Thread() {
+                    @Override
+                    public void run() {
+                        clientAPI.sendCurrentRSAKeyAndReceiveSessionKey();
+                    }
+                }.start();
+                mainFrame.setEnabled(true);
+            }
+        };
+    }
+
     public ActionListener getChangeEmailButtonListener() {
         return new ActionListener() {
             public void actionPerformed(ActionEvent e) {

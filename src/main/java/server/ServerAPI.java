@@ -1,6 +1,8 @@
 package server;
 
-import java.io.FileNotFoundException;
+import javafx.util.Pair;
+import util.ServerCommands;
+
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -14,4 +16,7 @@ public interface ServerAPI {
     void sendEncodedSessionKey() throws IOException;
     void sendEncodedFile(String filename) throws IOException;
     String receiveFilename() throws IOException;
+    Pair<String, Byte[]> receiveCredentials() throws IOException;
+    void sendSessionToken(byte[] sessionToken) throws IOException;
+    void sendCredentialsCheckResult(ServerCommands result) throws IOException;
 }

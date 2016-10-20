@@ -1,5 +1,8 @@
 package server.impl;
 
+import com.sun.deploy.util.ArrayUtil;
+import javafx.util.Pair;
+import org.apache.commons.lang3.ArrayUtils;
 import security.AES;
 import security.CryptoSystem;
 import security.RSA;
@@ -11,6 +14,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import java.io.*;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
@@ -160,5 +164,36 @@ public class ServerAPIImpl implements ServerAPI {
         } else {
             return new String(filenameBytes);
         }
+    }
+
+    public Pair<String, Byte[]> receiveCredentials() throws IOException {
+        int byteArrayLength = fromClient.read();
+
+        byte[] loginLengthBytes = new byte[byteArrayLength];
+        fromClient.read(loginLengthBytes, 0, byteArrayLength);
+        int loginLengthInt = ByteBuffer.wrap(loginLengthBytes).getInt();
+        byte[] loginBytes = new byte[loginLengthInt];
+        fromClient.read(loginBytes, 0, loginLengthInt);
+
+        byte[] passwordLengthBytes = new byte[byteArrayLength];
+        fromClient.read(passwordLengthBytes, 0, byteArrayLength);
+        int passwordLengthInt = ByteBuffer.wrap(passwordLengthBytes).getInt();
+        byte[] passwordBytes = new byte[passwordLengthInt];
+        fromClient.read(passwordBytes, 0, passwordLengthInt);
+        return new Pair<String, Byte[]>(new String(loginBytes), ArrayUtils.toObject(passwordBytes));
+    }
+
+    public void sendSessionToken(byte[] sessionToken) throws IOException {
+        int byteLength = 8;
+        byte[] tokenLength = ByteBuffer.allocate(byteLength).putInt(sessionToken.length).array();
+        toClient.write(ServerCommands.SEND_SESSION_TOKEN.getValue());
+        toClient.write(byteLength);
+        toClient.write(tokenLength);
+        toClient.write(sessionToken);
+    }
+
+    public void sendCredentialsCheckResult(ServerCommands result) throws IOException {
+        toClient.write(ServerCommands.SEND_CREDENTIALS_RESULT.getValue());
+        toClient.write(result.getValue());
     }
 }

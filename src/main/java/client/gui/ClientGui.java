@@ -36,6 +36,7 @@ public class ClientGui extends JFrame {
     }
 
     public void setDefaultSettings() {
+        setTitle("Lab1 KBRS");
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setPreferredSize(new Dimension(700, 400));
         setVisible(true);

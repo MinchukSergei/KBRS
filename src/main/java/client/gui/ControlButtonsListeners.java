@@ -168,7 +168,6 @@ public class ControlButtonsListeners {
     }
 
 
-
     private boolean isAuthenticated() {
         if (clientAPI.getAuthenticated() == null) {
             JOptionPane.showMessageDialog(null, "You must logged.");

@@ -22,6 +22,7 @@ import javax.mail.MessagingException;
 import javax.swing.*;
 import java.io.*;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -258,6 +259,36 @@ public class ClientAPIImpl implements ClientAPI {
             JOptionPane.showConfirmDialog(mainFrame, e.getMessage());
             return;
         }
+    }
+
+    public void sendCredentials(String login, byte[] password) throws IOException {
+        toServer.write(ClientCommands.SEND_CREDENTIALS.getValue());
+        byte[] loginBytes = login.getBytes();
+        int byteArrayLength = 8;
+
+        //cause byte length may be more than 256
+        byte[] loginLength = ByteBuffer.allocate(byteArrayLength).putInt(loginBytes.length).array();
+        byte[] passwordLength = ByteBuffer.allocate(byteArrayLength).putInt(password.length).array();
+        toServer.write(byteArrayLength);
+        toServer.write(loginLength);
+        toServer.write(loginBytes);
+        toServer.write(passwordLength);
+        toServer.write(password);
+    }
+
+    public byte[] receiveSessionToken() throws IOException {
+        int byteLength = fromServer.read();
+        byte[] sessionKeyByteLength = new byte[byteLength];
+        fromServer.read(sessionKeyByteLength, 0, byteLength);
+        int sessionTokenLength = ByteBuffer.wrap(sessionKeyByteLength).getInt();
+        byte[] token = new byte[sessionTokenLength];
+        fromServer.read(token, 0, sessionTokenLength);
+        return token;
+    }
+
+    public ServerCommands getCredentialResult() throws IOException {
+        int result = fromServer.read();
+        return ServerCommands.getCommandByValue(result);
     }
 
     private void sendCurrentPublicRSAKey(byte[] publicKey) throws IOException {

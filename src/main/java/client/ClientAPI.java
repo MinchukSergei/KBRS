@@ -1,5 +1,7 @@
 package client;
 
+import util.ServerCommands;
+
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -13,4 +15,7 @@ public interface ClientAPI {
     boolean sendFilename(String filename) throws IOException;
     String receiveFile() throws IOException, NoSuchAlgorithmException, SQLException, InvalidKeySpecException;
     void sendCurrentRSAKeyAndReceiveSessionKey();
+    void sendCredentials(String login, byte[] password) throws IOException;
+    byte[] receiveSessionToken() throws IOException;
+    ServerCommands getCredentialResult() throws IOException;
 }

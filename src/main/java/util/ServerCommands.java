@@ -7,6 +7,7 @@ public enum  ServerCommands {
     SEND_ENCODED_SESSION_KEY(0),
     SEND_ENCODED_FILE(1),
     SEND_EOF(2),
+    SEND_SESSION_TOKEN(3),
 
     // FILE SENDING CONSTANTS
     FILE_EXISTS(10),
@@ -17,7 +18,12 @@ public enum  ServerCommands {
     // CONStANTS
     SERVER_PART_FILE_LENGTH(128),
     SERVER_PART_FILE_ENC_LENGTH(144),
-    SESSION_ENC_KEY_BYTE_LENGTH(256);
+    SESSION_ENC_KEY_BYTE_LENGTH(256),
+
+    //CREDENTIALS
+    SEND_CREDENTIALS_RESULT(50),
+    CORRECT_CREDENTIALS(55),
+    INCORRECT_CREDENTIALS(66);
 
     ServerCommands(int value) {
         this.value = value;

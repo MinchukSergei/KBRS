@@ -21,6 +21,9 @@ public  class TestClient {
 
     public static void main(String[] args) {
 
+
+
+
         ClientAPIImpl clientAPI = null;
         try {
             socket = new Socket(

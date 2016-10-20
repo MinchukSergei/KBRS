@@ -15,7 +15,7 @@ import java.sql.SQLException;
  */
 public class DAOuserImpl implements DAOuser {
     private static final String REGISTER = "INSERT INTO registration_table" +
-            " (user_login, user_password, user_email) VALUES (?, ?, ?)";
+            " (user_login, user_password) VALUES (?, ?)";
     private static final String SET_PR_KEY = "UPDATE registration_table" +
             " SET user_pr_key = ? WHERE user_login = ?";
     private static final String SET_SESSION_KEY = "UPDATE registration_table" +
@@ -26,8 +26,6 @@ public class DAOuserImpl implements DAOuser {
             " WHERE user_login = ?";
     private static final String GET_USER = "SELECT * FROM registration_table" +
             " WHERE user_login = ? AND user_password = ?";
-    private static final String UPDATE_EMAIL = "UPDATE registration_table" +
-            " SET user_email = ? WHERE user_login = ?";
 
     MySQLconnector mySQLconnector;
 
@@ -43,7 +41,6 @@ public class DAOuserImpl implements DAOuser {
         PreparedStatement statement = connection.prepareStatement(REGISTER);
         statement.setString(1, user.getUserLogin());
         statement.setString(2, hashedPass);
-        statement.setString(3, user.getUserEmail());
         statement.execute();
         connection.close();
     }
@@ -87,7 +84,6 @@ public class DAOuserImpl implements DAOuser {
         if (rs.next()) {
             user = new User();
             user.setUserLogin(rs.getString("user_login"));
-            user.setUserEmail(rs.getString("user_email"));
             user.setUserPrKey(rs.getBytes("user_pr_key"));
             user.setUserSessionKey(rs.getBytes("user_session_key"));
             user.setUserPubKey(rs.getBytes("user_pub_key"));
@@ -111,15 +107,6 @@ public class DAOuserImpl implements DAOuser {
             user.setUserPubKey(rs.getBytes("user_pub_key"));
         }
         rs.close();
-        connection.close();
-    }
-
-    public void updateEmail(User user) throws SQLException {
-        Connection connection = mySQLconnector.getConnection();
-        PreparedStatement statement = connection.prepareStatement(UPDATE_EMAIL);
-        statement.setString(1, user.getUserEmail());
-        statement.setString(2, user.getUserLogin());
-        statement.execute();
         connection.close();
     }
 }

@@ -1,8 +1,10 @@
 package server;
 
 import security.CryptoSystem;
+import security.KeyStoreUtils;
 import security.RSA;
 import server.impl.ServerAPIImpl;
+import sun.security.rsa.RSAPrivateCrtKeyImpl;
 import util.ResourceBundleManager;
 
 import java.io.*;
@@ -11,60 +13,23 @@ import java.net.Socket;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.text.ParseException;
+import java.util.Arrays;
+import java.util.BitSet;
 
 
 public class TestServer {
 
 
-    public static void main(String[] args) throws ParseException {
-        ClassLoader loader = ClassLoader.getSystemClassLoader();
-        File file = new File(loader.getResource("KeyStore.jks").getFile());
-        String alias = "alias";
-        KeyStore ks = null;
-        try {
-            ks = KeyStore.getInstance(KeyStore.getDefaultType());
-            ks.load(new FileInputStream(file), "password".toCharArray());
+    public static void main(String[] args) throws ParseException, IOException {
 
-            KeyStore.PrivateKeyEntry pkEntry = (KeyStore.PrivateKeyEntry)
-                    ks.getEntry("alias", new KeyStore.PasswordProtection("password".toCharArray()));
-
-
-            ks.deleteEntry("secretKeyAlias");
-
-            FileOutputStream fos = new FileOutputStream(file);
-            ks.store(fos, "password".toCharArray());
-            fos.close();
-
-
-
-            PrivateKey myPrivateKey = pkEntry.getPrivateKey();
-
-            RSA rsa = new RSA();
-            rsa.initCipher(CryptoSystem.RSA);
-            KeyPair kp = rsa.generateKeyPair();
-            PrivateKey mySecretKey = kp.getPrivate();
-
-
-            KeyStore.PrivateKeyEntry prEntry =
-                    new KeyStore.PrivateKeyEntry(mySecretKey, new Certificate[] {ks.getCertificate(alias)});
-            ks.setEntry(alias, prEntry, new KeyStore.PasswordProtection("password".toCharArray()));
-
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        } catch (CertificateException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (UnrecoverableEntryException e) {
-            e.printStackTrace();
-        }
-
-
+//        File roots = File.listRoots()[3];
+//
+//        FileOutputStream fids = new FileOutputStream(roots.toString() + "KBRS");
+//        fids.write(new byte[]{5});
+//        fids.close();
         int port = Integer.parseInt(ResourceBundleManager.getByName("server.port.number"));
         try {
             ServerSocket serverSocket = new ServerSocket(port);

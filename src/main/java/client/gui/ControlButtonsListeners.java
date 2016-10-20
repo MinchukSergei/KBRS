@@ -81,40 +81,6 @@ public class ControlButtonsListeners {
         };
     }
 
-    public ActionListener getChangeEmailButtonListener() {
-        return new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (!isAuthenticated()) {
-                    return;
-                }
-                ChangeEmailFrame changeEmailFrame = new ChangeEmailFrame("Change email");
-                changeEmailFrame.setClientAPI(clientAPI);
-                String[] labels = {"Email"};
-                JTextField emailField = new JTextField();
-                emailField.setText(clientAPI.getAuthenticated().getUserEmail());
-                JTextField[] textFields = {emailField};
-                changeEmailFrame.createAndShowGUI(labels, textFields);
-            }
-        };
-    }
-
-    public ActionListener getChangeEmailKeyButtonListener() {
-        return new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (!isAuthenticated()) {
-                    return;
-                }
-                ChangeEmailKeyFrame changeEmailKeyFrame = new ChangeEmailKeyFrame("Change email key");
-                changeEmailKeyFrame.setClientAPI(clientAPI);
-                String[] labels = {"Email key"};
-                JTextField keyField = new JTextField();
-                keyField.setText(clientAPI.getEmailKeyB64());
-                JTextField[] textFields = {keyField};
-                changeEmailKeyFrame.createAndShowGUI(labels, textFields);
-            }
-        };
-    }
-
     public ActionListener getGenerateRSAKeyButtonListener() {
         return new ActionListener() {
             public void actionPerformed(ActionEvent e) {

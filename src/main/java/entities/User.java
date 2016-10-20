@@ -6,7 +6,6 @@ public class User {
     private String userLogin;
     private String userPassword;
     private byte[] userPrKey;
-    private String userEmail;
     private byte[] userSessionKey;
     private byte[] userPubKey;
 
@@ -32,14 +31,6 @@ public class User {
 
     public void setUserPrKey(byte[] userPrKey) {
         this.userPrKey = userPrKey;
-    }
-
-    public String getUserEmail() {
-        return userEmail;
-    }
-
-    public void setUserEmail(String userEmail) {
-        this.userEmail = userEmail;
     }
 
     public byte[] getUserSessionKey() {
@@ -68,7 +59,6 @@ public class User {
         if (userLogin != null ? !userLogin.equals(user.userLogin) : user.userLogin != null) return false;
         if (userPassword != null ? !userPassword.equals(user.userPassword) : user.userPassword != null) return false;
         if (!Arrays.equals(userPrKey, user.userPrKey)) return false;
-        if (userEmail != null ? !userEmail.equals(user.userEmail) : user.userEmail != null) return false;
         if (!Arrays.equals(userSessionKey, user.userSessionKey)) return false;
         return Arrays.equals(userPubKey, user.userPubKey);
 
@@ -79,7 +69,6 @@ public class User {
         int result = userLogin != null ? userLogin.hashCode() : 0;
         result = 31 * result + (userPassword != null ? userPassword.hashCode() : 0);
         result = 31 * result + Arrays.hashCode(userPrKey);
-        result = 31 * result + (userEmail != null ? userEmail.hashCode() : 0);
         result = 31 * result + Arrays.hashCode(userSessionKey);
         result = 31 * result + Arrays.hashCode(userPubKey);
         return result;

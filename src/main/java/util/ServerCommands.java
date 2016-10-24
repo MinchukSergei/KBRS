@@ -21,9 +21,10 @@ public enum  ServerCommands {
     SESSION_ENC_KEY_BYTE_LENGTH(256),
 
     //CREDENTIALS
-    SEND_CREDENTIALS_RESULT(50),
-    CORRECT_CREDENTIALS(55),
-    INCORRECT_CREDENTIALS(66);
+    CORRECT_SIGN(51),
+    INCORRECT_SIGN(52),
+    CORRECT_CREDENTIALS(53),
+    INCORRECT_CREDENTIALS(54);
 
     ServerCommands(int value) {
         this.value = value;

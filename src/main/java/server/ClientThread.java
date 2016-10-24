@@ -1,19 +1,25 @@
 package server;
 
+import security.SHA;
 import server.impl.ServerAPIImpl;
 import sun.awt.windows.ThemeReader;
 import util.ClientCommands;
+import util.CredentialMessage;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
 
 /**
  * Created by USER on 25.09.2016.
  */
 public class ClientThread implements Runnable{
     private ServerAPIImpl serverAPI;
+    private CredentialMessage credentialMessage;
 
     public ClientThread(ServerAPIImpl serverAPI) {
         System.out.println("Client " + serverAPI.getSocket().getPort() + " connected.");
@@ -32,13 +38,12 @@ public class ClientThread implements Runnable{
         while (true) {
             try {
                 Thread.sleep(500);
-                if (fromClient.available() != 0) {
+                int command = fromClient.read();
+                if (command == -1) {
                     System.out.println("Client " + serverAPI.getSocket().getPort() + " disconnected.");
                     serverAPI.getSocket().close();
                     return;
                 }
-                int command = fromClient.read();
-
                 ClientCommands target = ClientCommands.getCommandByValue(command);
 
                 if (target == null) {
@@ -67,6 +72,18 @@ public class ClientThread implements Runnable{
                         System.out.println("Server sending to Client " + serverAPI.getSocket().getPort() +
                                 " encoded file.");
                         break;
+//                    case SEND_DS_PUBLIC_KEY:
+//                        serverAPI.receiveDSPublicKey();
+//                        break;
+                    case SEND_CREDENTIALS:
+                        credentialMessage = serverAPI.receiveCredentials();
+                        serverAPI.sendCredentialsCheckResult(credentialMessage);
+                        break;
+                    case GIVE_TOKEN:
+                        byte[] token = SHA.generateSessionToken(credentialMessage);
+                        serverAPI.sendSessionToken(token);
+                        break;
+
                 }
 
             } catch (IOException e) {

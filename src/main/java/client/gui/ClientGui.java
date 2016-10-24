@@ -84,24 +84,27 @@ public class ClientGui extends JFrame {
         controlPanel = new JPanel();
         controlPanel.setLayout(new SpringLayout());
 
-        String[] buttonLabels = {"Register", "Login","Send current RSA key", "Generate new RSA key", "Get file"};
+        String[] buttonLabels = {"Login","Send current RSA key", "Generate new RSA key", "Get file"};
         List<JButton> controlButtons = new ArrayList<JButton>();
 
         ControlButtonsListeners c = new ControlButtonsListeners();
         c.setClientAPI(clientAPI);
         c.setMainFrame(this);
 
+        for (int i = 0; i < buttonLabels.length; i++) {
+            controlButtons.add(new JButton(buttonLabels[i]));
+            controlPanel.add(controlButtons.get(i));
+        }
+
         ActionListener[] buttonListeners = {
-                c.getRegisterButtonListener(),
-                c.getLoginButtonListener(),
+                c.getLoginButtonListener(controlButtons.get(0)),
                 c.getSendCurrentPublicRSAKey(),
                 c.getGenerateRSAKeyButtonListener(),
                 c.getSendFilenameButtonListener()
         };
+
         for (int i = 0; i < buttonLabels.length; i++) {
-            controlButtons.add(new JButton(buttonLabels[i]));
             controlButtons.get(i).addActionListener(buttonListeners[i]);
-            controlPanel.add(controlButtons.get(i));
         }
 
         filenameTextField = new JTextField("Filename");

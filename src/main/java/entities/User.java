@@ -4,10 +4,9 @@ import java.util.Arrays;
 
 public class User {
     private String userLogin;
-    private String userPassword;
-    private byte[] userPrKey;
-    private byte[] userSessionKey;
+    private byte[] userPassword;
     private byte[] userPubKey;
+    private byte[] userDSPubKey;
 
     public String getUserLogin() {
         return userLogin;
@@ -17,28 +16,20 @@ public class User {
         this.userLogin = userLogin;
     }
 
-    public String getUserPassword() {
+    public byte[] getUserPassword() {
         return userPassword;
     }
 
-    public void setUserPassword(String userPassword) {
+    public void setUserPassword(byte[] userPassword) {
         this.userPassword = userPassword;
     }
 
-    public byte[] getUserPrKey() {
-        return userPrKey;
+    public byte[] getUserDSPubKey() {
+        return userDSPubKey;
     }
 
-    public void setUserPrKey(byte[] userPrKey) {
-        this.userPrKey = userPrKey;
-    }
-
-    public byte[] getUserSessionKey() {
-        return userSessionKey;
-    }
-
-    public void setUserSessionKey(byte[] userSessionKey) {
-        this.userSessionKey = userSessionKey;
+    public void setUserDSPubKey(byte[] userDSPubKey) {
+        this.userDSPubKey = userDSPubKey;
     }
 
     public byte[] getUserPubKey() {
@@ -49,28 +40,5 @@ public class User {
         this.userPubKey = userPubKey;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
 
-        User user = (User) o;
-
-        if (userLogin != null ? !userLogin.equals(user.userLogin) : user.userLogin != null) return false;
-        if (userPassword != null ? !userPassword.equals(user.userPassword) : user.userPassword != null) return false;
-        if (!Arrays.equals(userPrKey, user.userPrKey)) return false;
-        if (!Arrays.equals(userSessionKey, user.userSessionKey)) return false;
-        return Arrays.equals(userPubKey, user.userPubKey);
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = userLogin != null ? userLogin.hashCode() : 0;
-        result = 31 * result + (userPassword != null ? userPassword.hashCode() : 0);
-        result = 31 * result + Arrays.hashCode(userPrKey);
-        result = 31 * result + Arrays.hashCode(userSessionKey);
-        result = 31 * result + Arrays.hashCode(userPubKey);
-        return result;
-    }
 }

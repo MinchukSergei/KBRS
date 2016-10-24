@@ -1,7 +1,6 @@
 package server;
 
-import javafx.util.Pair;
-import util.ServerCommands;
+import util.CredentialMessage;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -16,7 +15,13 @@ public interface ServerAPI {
     void sendEncodedSessionKey() throws IOException;
     void sendEncodedFile(String filename) throws IOException;
     String receiveFilename() throws IOException;
-    Pair<String, Byte[]> receiveCredentials() throws IOException;
+
+    //void receiveDSPublicKey() throws IOException;
+
+    CredentialMessage receiveCredentials() throws IOException;
+    boolean sendCredentialsCheckResult(CredentialMessage credentialMessage) throws IOException;
+
     void sendSessionToken(byte[] sessionToken) throws IOException;
-    void sendCredentialsCheckResult(ServerCommands result) throws IOException;
+
+
 }

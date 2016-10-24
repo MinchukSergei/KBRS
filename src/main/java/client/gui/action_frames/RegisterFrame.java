@@ -4,8 +4,6 @@ import dao.DAOuser;
 import dao.impl.DAOuserImpl;
 import entities.User;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -25,11 +23,9 @@ public class RegisterFrame extends ActionFrame {
             public void actionPerformed(ActionEvent e) {
                 int loginNumber = 0; //Login number textField
                 int passwordNumber = 1; //Password number textField
-                int emailNumber = 2; //Email number textfield
 
                 JTextField loginField = fields[loginNumber];
                 JTextField passwordField = fields[passwordNumber];
-                JTextField emailField = fields[emailNumber];
 
                 if (!isFieldsCompleted()) {
                     JOptionPane.showMessageDialog(RegisterFrame.this, "Fill all fields.");
@@ -37,22 +33,15 @@ public class RegisterFrame extends ActionFrame {
                 }
 
 
-                if (!isPasswordLengthEnough(passwordField.getText())) {
+                if (!isPasswordLengthCorrect(passwordField.getText())) {
                     JOptionPane.showMessageDialog(RegisterFrame.this, "Password should contains min 5 symbols.");
                     return;
                 }
 
-                if (!isValidEmailAddress(emailField.getText())) {
-                    JOptionPane.showMessageDialog(RegisterFrame.this, "Email address is invalid.");
-                    return;
-                }
-
-
                 DAOuser daOuser = new DAOuserImpl();
                 User newUser = new User();
                 newUser.setUserLogin(loginField.getText());
-                newUser.setUserPassword(passwordField.getText());
-                newUser.setUserEmail(emailField.getText());
+                //newUser.setUserPassword(passwordField.getText());
                 try {
                     daOuser.registerUser(newUser);
                 } catch (SQLException ex) {

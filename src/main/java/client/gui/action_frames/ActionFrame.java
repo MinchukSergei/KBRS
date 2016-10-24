@@ -84,7 +84,7 @@ public abstract class ActionFrame extends JFrame {
 
     protected abstract void setOkButtonActionListener();
 
-    protected boolean isPasswordLengthEnough(String password) {
+    protected boolean isPasswordLengthCorrect(String password) {
         return password.length() >= 5;
     }
 

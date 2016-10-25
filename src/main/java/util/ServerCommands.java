@@ -14,6 +14,8 @@ public enum  ServerCommands {
     FILE_NOT_FOUND(11),
     END_OF_FILE(13),
     SESSION_KEY_IS_NULL(21),
+    PUBLIC_KEY_IS_NULL(23),
+    PUBLIC_KEY_IS_CORRECT(24),
 
     // CONStANTS
     SERVER_PART_FILE_LENGTH(128),

@@ -17,7 +17,7 @@ public interface ServerAPI {
     String receiveFilename() throws IOException;
 
     //void receiveDSPublicKey() throws IOException;
-
+    void sendKSData(byte[] ksData) throws IOException;
     CredentialMessage receiveCredentials() throws IOException;
     boolean sendCredentialsCheckResult(CredentialMessage credentialMessage) throws IOException;
 

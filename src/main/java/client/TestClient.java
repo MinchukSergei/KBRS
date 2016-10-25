@@ -20,10 +20,6 @@ public  class TestClient {
     private static Socket socket;
 
     public static void main(String[] args) {
-
-
-
-
         ClientAPIImpl clientAPI = null;
         try {
             socket = new Socket(

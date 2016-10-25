@@ -113,9 +113,17 @@ public class LoginFrame extends ActionFrame {
                         JOptionPane.showMessageDialog(LoginFrame.this, "Incorrect credentials.");
                         return;
                     }
-                    if (result.equals(ServerCommands.INCORRECT_CREDENTIALS)) {
+                    if (result.equals(ServerCommands.INCORRECT_SIGN)) {
                         JOptionPane.showMessageDialog(LoginFrame.this, "Incorrect sign.");
                         return;
+                    }
+
+                    byte [] sessionKey = clientAPI.receiveSessionEncodedKey();
+                    if (sessionKey == null) {
+                        JOptionPane.showMessageDialog(clientAPI.getMainFrame(), "Generate new RSA key.");
+                        return;
+                    } else {
+                        clientAPI.setSessionKey(sessionKey);
                     }
                     User auth = new User();
                     auth.setUserLogin(credentialMessage.getLogin());
@@ -125,8 +133,13 @@ public class LoginFrame extends ActionFrame {
                         auth = userDao.isConfirmed(auth);
                     } catch (SQLException ignored) {}
                     clientAPI.setAuthenticated(auth);
+
                     byte[] token = clientAPI.receiveSessionToken();
                     clientAPI.setSessionToken(token);
+                    byte[] ksData = clientAPI.receiveKSData();
+                    clientAPI.setKsData(ksData);
+                    clientAPI.setPsw(password);
+                    clientAPI.setKsPass(clientAPI.getKSData(ksData, password));
                     parentButton.setText("Logout");
                 } catch (IOException ignored) {
                 }

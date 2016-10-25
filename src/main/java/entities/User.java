@@ -7,6 +7,15 @@ public class User {
     private byte[] userPassword;
     private byte[] userPubKey;
     private byte[] userDSPubKey;
+    private byte[] userKSData;
+
+    public byte[] getUserKSData() {
+        return userKSData;
+    }
+
+    public void setUserKSData(byte[] userKSData) {
+        this.userKSData = userKSData;
+    }
 
     public String getUserLogin() {
         return userLogin;

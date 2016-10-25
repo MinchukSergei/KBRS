@@ -21,6 +21,9 @@ public class DAOuserImpl implements DAOuser {
     private static final String SET_DS_PUB_KEY = "UPDATE registration_table" +
             " SET user_ds_pub_key = ? WHERE user_login = ?";
 
+    private static final String SET_KS_DATA = "UPDATE registration_table" +
+            " SET user_ks_data = ? WHERE user_login = ?";
+
     private static final String GET_KEY = "SELECT * FROM registration_table" +
             " WHERE user_login = ?";
     private static final String GET_USER = "SELECT * FROM registration_table" +
@@ -61,6 +64,15 @@ public class DAOuserImpl implements DAOuser {
         connection.close();
     }
 
+    public void setKSData(User user) throws SQLException {
+        Connection connection = mySQLconnector.getConnection();
+        PreparedStatement statement = connection.prepareStatement(SET_KS_DATA);
+        statement.setBytes(1, user.getUserKSData());
+        statement.setString(2, user.getUserLogin());
+        statement.execute();
+        connection.close();
+    }
+
     public User isConfirmed(User user) throws SQLException {
         Connection connection = mySQLconnector.getConnection();
         PreparedStatement statement = connection.prepareStatement(GET_USER);
@@ -92,6 +104,7 @@ public class DAOuserImpl implements DAOuser {
         if (rs.next()) {
             user.setUserDSPubKey(rs.getBytes("user_ds_pub_key"));
             user.setUserPubKey(rs.getBytes("user_pub_key"));
+            user.setUserKSData(rs.getBytes("user_ks_data"));
         }
         rs.close();
         connection.close();

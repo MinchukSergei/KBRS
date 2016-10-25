@@ -54,16 +54,17 @@ public class ServerAPIImpl implements ServerAPI {
         return socket;
     }
 
+    public PublicKey getPublicKey() {
+        return publicKey;
+    }
+
+    public void setPublicKey(PublicKey publicKey) {
+        this.publicKey = publicKey;
+    }
+
     public void receivePublicRSAKey() throws IOException, InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException {
-        int publicRSAKeyBytesLength = ClientCommands.RSA_PUBLIC_KEY_BYTE_LENGTH.getValue();
-        byte[] rsaPublicKeyBytes = new byte[publicRSAKeyBytesLength];
-        fromClient.read(rsaPublicKeyBytes, 0, publicRSAKeyBytesLength);
-        if (rsaPublicKeyBytes.length < publicRSAKeyBytesLength) {
-            System.out.println("Can't receive RSA public key.");
-        } else {
-            publicKey = KeyFactory.getInstance(CryptoSystem.RSA).
-                    generatePublic(new X509EncodedKeySpec(rsaPublicKeyBytes));
-        }
+        byte[] rsaPublicKeyBytes = readFromClient();
+        publicKey = KeyFactory.getInstance(CryptoSystem.RSA).generatePublic(new X509EncodedKeySpec(rsaPublicKeyBytes));
     }
 
     private byte[] encodeSessionKey() {
@@ -82,13 +83,18 @@ public class ServerAPIImpl implements ServerAPI {
         sessionKey = aes.generateKey();
     }
 
+    public void sendKSData(byte[] ksData) throws IOException {
+        writeToClient(ksData);
+    }
+
     public void sendEncodedSessionKey() throws IOException {
         byte[] encodedSessionKey = encodeSessionKey();
         if (encodedSessionKey == null) {
-            System.out.println("Public key hasn't received.");
+            toClient.write(ServerCommands.PUBLIC_KEY_IS_NULL.getValue());
             return;
         }
-        toClient.write(encodedSessionKey);
+        toClient.write(ServerCommands.PUBLIC_KEY_IS_CORRECT.getValue());
+        writeToClient(encodedSessionKey);
     }
 
     public void sendEncodedFile(String filename) throws IOException {

@@ -4,6 +4,8 @@ import client.gui.action_frames.LoginFrame;
 import client.gui.action_frames.RegisterFrame;
 import client.impl.ClientAPIImpl;
 import org.apache.commons.lang3.StringUtils;
+import security.Base64;
+import security.SHA;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -67,23 +69,7 @@ public class ControlButtonsListeners {
         };
     }
 
-    public ActionListener getSendCurrentPublicRSAKey() {
-        return new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (!isAuthenticated()) {
-                    return;
-                }
-                mainFrame.setEnabled(false);
-                new Thread() {
-                    @Override
-                    public void run() {
-                        clientAPI.sendCurrentRSAKeyAndReceiveSessionKey();
-                    }
-                }.start();
-                mainFrame.setEnabled(true);
-            }
-        };
-    }
+
 
     public ActionListener getGenerateRSAKeyButtonListener() {
         return new ActionListener() {
@@ -91,31 +77,15 @@ public class ControlButtonsListeners {
                 if (!isAuthenticated()) {
                     return;
                 }
-                //String pin = JOptionPane.showInputDialog(mainFrame, "Create your PIN.");
-                JPasswordField passwordField = new JPasswordField();
-                int returnVal = JOptionPane.showConfirmDialog(mainFrame, passwordField, "Create your PIN.", JOptionPane.OK_CANCEL_OPTION);
-                final String pin = new String(passwordField.getPassword());
-                if (returnVal == JOptionPane.OK_OPTION) {
-                    if (StringUtils.isBlank(pin)) {
-                        JOptionPane.showMessageDialog(mainFrame, "Input your PIN");
-                        return;
-                    }
-                    if (pin.length() != 4) {
-                        JOptionPane.showMessageDialog(mainFrame, "PIN length should be 4 symbols");
-                        return;
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(mainFrame, "Input your PIN");
-                    return;
-                }
                 mainFrame.setEnabled(false);
                 new Thread() {
                     @Override
                     public void run() {
-                        clientAPI.sendKeyAndReceiveSessionKey(pin);
+                        clientAPI.sendKeyAndReceiveSessionKey();
+                        mainFrame.setEnabled(true);
                     }
                 }.start();
-                mainFrame.setEnabled(true);
+
             }
         };
     }
@@ -126,32 +96,15 @@ public class ControlButtonsListeners {
                 if (!isAuthenticated()) {
                     return;
                 }
-                JPasswordField passwordField = new JPasswordField();
-                int returnVal = JOptionPane.showConfirmDialog(mainFrame, passwordField, "Input your PIN.", JOptionPane.OK_CANCEL_OPTION);
-                final String pin = new String(passwordField.getPassword());
-                if (returnVal == JOptionPane.OK_OPTION) {
-                    if (StringUtils.isBlank(pin)) {
-                        JOptionPane.showMessageDialog(mainFrame, "Input your PIN");
-                        return;
-                    }
-                    if (pin.length() != 4) {
-                        JOptionPane.showMessageDialog(mainFrame, "PIN length should be 4 symbols");
-                        return;
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(mainFrame, "Input your PIN");
-                    return;
-                }
-
                 String filename = mainFrame.getFilenameTextField().getText();
-                if (filename.isEmpty()) {
+                if (StringUtils.isBlank(filename)) {
                     JOptionPane.showMessageDialog(mainFrame, "Fill filename.");
                     return;
                 }
                 try {
                     if (clientAPI.sendFilename(filename)) {
 
-                        String receivedFile = clientAPI.receiveFile(pin);
+                        String receivedFile = clientAPI.receiveFile(clientAPI.getKsPass());
                         if (receivedFile != null) {
                             FileFrame fileFrame = new FileFrame(filename);
                             fileFrame.appendText(receivedFile);

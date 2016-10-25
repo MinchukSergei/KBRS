@@ -13,10 +13,9 @@ import java.sql.SQLException;
  * Created by USER on 23.09.2016.
  */
 public interface ClientAPI {
-    void sendKeyAndReceiveSessionKey(String keyStorePass);
+    void sendKeyAndReceiveSessionKey();
     boolean sendFilename(String filename) throws IOException;
     String receiveFile(String password) throws IOException, NoSuchAlgorithmException, SQLException, InvalidKeySpecException;
-    void sendCurrentRSAKeyAndReceiveSessionKey();
 
     //void sendDSPublicKey(PublicKey publicKey) throws IOException;
     void sendCredentials(CredentialMessage credentialMessage) throws IOException;

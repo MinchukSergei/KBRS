@@ -10,4 +10,5 @@ public interface DAOuser {
     void setDSPubKey(User user) throws SQLException;
     User isConfirmed(User user) throws SQLException;
     void getKeys(User user) throws SQLException;
+    void setKSData(User user) throws SQLException;
 }

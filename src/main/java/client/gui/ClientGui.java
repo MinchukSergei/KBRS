@@ -84,7 +84,7 @@ public class ClientGui extends JFrame {
         controlPanel = new JPanel();
         controlPanel.setLayout(new SpringLayout());
 
-        String[] buttonLabels = {"Login","Send current RSA key", "Generate new RSA key", "Get file"};
+        String[] buttonLabels = {"Login", "Generate new RSA key", "Get file"};
         List<JButton> controlButtons = new ArrayList<JButton>();
 
         ControlButtonsListeners c = new ControlButtonsListeners();
@@ -98,7 +98,6 @@ public class ClientGui extends JFrame {
 
         ActionListener[] buttonListeners = {
                 c.getLoginButtonListener(controlButtons.get(0)),
-                c.getSendCurrentPublicRSAKey(),
                 c.getGenerateRSAKeyButtonListener(),
                 c.getSendFilenameButtonListener()
         };

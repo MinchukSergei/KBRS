@@ -5,10 +5,7 @@ import client.gui.ClientGui;
 import dao.DAOuser;
 import dao.impl.DAOuserImpl;
 import entities.User;
-import security.AES;
-import security.CryptoSystem;
-import security.KeyStoreUtils;
-import security.RSA;
+import security.*;
 import util.ClientCommands;
 import util.CredentialMessage;
 import util.ServerCommands;
@@ -16,7 +13,6 @@ import util.ServerCommands;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.swing.*;
-import javax.swing.text.BadLocationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -36,11 +32,38 @@ public class ClientAPIImpl implements ClientAPI {
     private User authenticated;
     private byte[] sessionKey;
     private byte[] sessionToken;
+    private byte[] ksData;
+    private String psw;
+    private String ksPass;
 
     private InputStream fromServer;
     private OutputStream toServer;
 
     private ClientGui mainFrame;
+
+    public String getKsPass() {
+        return ksPass;
+    }
+
+    public void setKsPass(String ksPass) {
+        this.ksPass = ksPass;
+    }
+
+    public byte[] getKsData() {
+        return ksData;
+    }
+
+    public void setKsData(byte[] ksData) {
+        this.ksData = ksData;
+    }
+
+    public String getPsw() {
+        return psw;
+    }
+
+    public void setPsw(String psw) {
+        this.psw = psw;
+    }
 
     public ClientGui getMainFrame() {
         return mainFrame;
@@ -78,7 +101,15 @@ public class ClientAPIImpl implements ClientAPI {
         this.socket = socket;
     }
 
-    public void sendKeyAndReceiveSessionKey(String keyStorePass) {
+    public byte[] getSessionKey() {
+        return sessionKey;
+    }
+
+    public void setSessionKey(byte[] sessionKey) {
+        this.sessionKey = sessionKey;
+    }
+
+    public void sendKeyAndReceiveSessionKey() {
         if (socket == null) {
             JOptionPane.showMessageDialog(mainFrame, "Server is not available.");
             return;
@@ -86,12 +117,14 @@ public class ClientAPIImpl implements ClientAPI {
         KeyPair keyPair = genKeyPair();
         PublicKey publicKey = keyPair.getPublic();
 
-
-
         try {
             sendRSAKey(publicKey);
             mainFrame.getLogTextArea().append("Sending to server public RSA KEY\n");
             sessionKey = receiveSessionEncodedKey();
+            if (sessionKey == null) {
+                JOptionPane.showMessageDialog(mainFrame, "Generate new RSA key.");
+                return;
+            }
             mainFrame.getLogTextArea().append("Receiving from server encoded session key\n");
         } catch (IOException e) {
             mainFrame.getLogTextArea().append(e.getMessage() + "\n");
@@ -104,9 +137,17 @@ public class ClientAPIImpl implements ClientAPI {
         }
         authenticated.setUserPubKey(publicKey.getEncoded());
 
+        String keyStorePass = "";
+        try {
+            byte[] ksData = receiveKSData();
+            ksPass = getKSData(ksData, psw);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         PrivateKey privateKey = keyPair.getPrivate();
         try {
-            KeyStoreUtils.writeEntry(authenticated.getUserLogin(), privateKey, keyStorePass);
+            KeyStoreUtils.writeEntry(authenticated.getUserLogin(), privateKey, ksPass);
         } catch (KeyStoreException e) {
             JOptionPane.showConfirmDialog(mainFrame, e.getMessage());
             return;
@@ -130,6 +171,15 @@ public class ClientAPIImpl implements ClientAPI {
         }
     }
 
+    public String getKSData(byte[] ksData, String psw) {
+        byte[] hashedPsw = SHA.hash(psw);
+        byte[] res = new byte[32];
+        for (int i = 0; i < hashedPsw.length; i++) {
+            res[i] = (byte)(ksData[i] ^ hashedPsw[i]);
+        }
+        return Base64.encodeToBase64(res);
+    }
+
     private KeyPair genKeyPair() {
         RSA rsa = new RSA();
         rsa.initCipher(RSA.RSA);
@@ -138,15 +188,17 @@ public class ClientAPIImpl implements ClientAPI {
 
     private void sendRSAKey(PublicKey key) throws IOException {
         toServer.write(ClientCommands.SEND_PUBLIC_RSA_KEY.getValue());
-        toServer.write(key.getEncoded());
+        writeToServer(key.getEncoded());
     }
 
-    private byte[] receiveSessionEncodedKey() throws IOException {
-        byte[] encodedSessionKey = new byte[ServerCommands.SESSION_ENC_KEY_BYTE_LENGTH.getValue()];
-        int n = fromServer.read(encodedSessionKey);
-        if (n < encodedSessionKey.length) {
-            fromServer.close();
+    public byte[] receiveSessionEncodedKey() throws IOException {
+        int result = fromServer.read();
+        if (result == ServerCommands.PUBLIC_KEY_IS_NULL.getValue()) {
             return null;
+        }
+        byte[] encodedSessionKey = new byte[0];
+        if (result == ServerCommands.PUBLIC_KEY_IS_CORRECT.getValue()) {
+            encodedSessionKey = readFromServer();
         }
         return encodedSessionKey;
     }
@@ -184,30 +236,6 @@ public class ClientAPIImpl implements ClientAPI {
         return file;
     }
 
-    public void sendCurrentRSAKeyAndReceiveSessionKey() {
-        if (socket == null) {
-            JOptionPane.showMessageDialog(mainFrame, "Server is not available.");
-            return;
-        }
-        if (authenticated.getUserPubKey() == null) {
-            JOptionPane.showMessageDialog(mainFrame, "Generate new keys.");
-            return;
-        }
-
-        byte[] publicKey = authenticated.getUserPubKey();
-
-
-        try {
-            sendCurrentPublicRSAKey(publicKey);
-            mainFrame.getLogTextArea().append("Sending to server current public RSA KEY\n");
-            sessionKey = receiveSessionEncodedKey();
-            mainFrame.getLogTextArea().append("Receiving from server encoded session key\n");
-        } catch (IOException e) {
-            mainFrame.getLogTextArea().append(e.getMessage() + "\n");
-            return;
-        }
-    }
-
 //    public void sendDSPublicKey(PublicKey publicKey) throws IOException {
 //        toServer.write(ClientCommands.SEND_DS_PUBLIC_KEY.getValue());
 //        writeToServer(publicKey.getEncoded());
@@ -239,7 +267,6 @@ public class ClientAPIImpl implements ClientAPI {
     }
 
     public byte[] receiveSessionToken() throws IOException {
-        toServer.write(ClientCommands.GIVE_TOKEN.getValue());
         byte[] token = readFromServer();
         return token;
     }
@@ -258,9 +285,8 @@ public class ClientAPIImpl implements ClientAPI {
         }
     }
 
-    private void sendCurrentPublicRSAKey(byte[] publicKey) throws IOException {
-        toServer.write(ClientCommands.SEND_CURRENT_PUBLIC_RSA_KEY.getValue());
-        toServer.write(publicKey);
+    public byte[] receiveKSData() throws IOException {
+        return readFromServer();
     }
 
     private String receiveAndDecodeFile(String alias, String password) throws IOException, SQLException, NoSuchAlgorithmException {
@@ -283,33 +309,8 @@ public class ClientAPIImpl implements ClientAPI {
         } catch (UnrecoverableEntryException e) {
             toServer.write(ClientCommands.ERROR_FILE_RECEIVING.getValue());
             JOptionPane.showMessageDialog(mainFrame, "Your pin is incorrect.");
-            attemptCount -= 1;
-            if (attemptCount <= 0) {
-                mainFrame.getLogTextArea().append("Waiting...\n");
-                mainFrame.setEnabled(false);
-                new Thread() {
-                    @Override
-                    public void run() {
-                        long time = 0;
-                        long maxTime = (long) (30 * Math.pow(2, Math.abs(attemptCount)));
-                        while (true) {
-                            time += 1;
-                            try {
-                                Thread.sleep(1000);
-                            } catch (InterruptedException e1) {
-                            }
-                            mainFrame.getLogTextArea().append(maxTime - time + "\n");
-                            if (time == maxTime) {
-                                mainFrame.setEnabled(true);
-                                break;
-                            }
-                        }
-                    }
-                }.start();
-            }
             return null;
         }
-        attemptCount = 3;
 
         toServer.write(ClientCommands.CORRECT_FILE_RECEIVING.getValue());
         RSA rsa = new RSA();

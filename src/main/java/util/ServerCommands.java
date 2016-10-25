@@ -26,7 +26,9 @@ public enum  ServerCommands {
     CORRECT_SIGN(51),
     INCORRECT_SIGN(52),
     CORRECT_CREDENTIALS(53),
-    INCORRECT_CREDENTIALS(54);
+    INCORRECT_CREDENTIALS(54),
+    INCORRECT_TOKEN(55),
+    CORRECT_TOKEN(56);
 
     ServerCommands(int value) {
         this.value = value;

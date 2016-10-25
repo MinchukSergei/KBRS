@@ -200,6 +200,14 @@ public class ServerAPIImpl implements ServerAPI {
         return true;
     }
 
+    public void sendResultCheckSessionToken(ServerCommands commands) throws IOException {
+        toClient.write(commands.getValue());
+    }
+
+    public byte[] receiveSessionToken() throws IOException {
+        return readFromClient();
+    }
+
     private void writeToClient(byte[] msg) throws IOException {
         int byteArrayLength = 8;
         toClient.write(byteArrayLength);

@@ -101,7 +101,9 @@ public class ControlButtonsListeners {
                     JOptionPane.showMessageDialog(mainFrame, "Fill filename.");
                     return;
                 }
+
                 try {
+
                     if (clientAPI.sendFilename(filename)) {
 
                         String receivedFile = clientAPI.receiveFile(clientAPI.getKsPass());

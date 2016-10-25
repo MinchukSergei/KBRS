@@ -1,6 +1,7 @@
 package server;
 
 import util.CredentialMessage;
+import util.ServerCommands;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -15,6 +16,8 @@ public interface ServerAPI {
     void sendEncodedSessionKey() throws IOException;
     void sendEncodedFile(String filename) throws IOException;
     String receiveFilename() throws IOException;
+    byte[] receiveSessionToken() throws IOException;
+    void sendResultCheckSessionToken(ServerCommands commands) throws IOException;
 
     //void receiveDSPublicKey() throws IOException;
     void sendKSData(byte[] ksData) throws IOException;
@@ -22,6 +25,4 @@ public interface ServerAPI {
     boolean sendCredentialsCheckResult(CredentialMessage credentialMessage) throws IOException;
 
     void sendSessionToken(byte[] sessionToken) throws IOException;
-
-
 }

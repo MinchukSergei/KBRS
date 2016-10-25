@@ -22,4 +22,6 @@ public interface ClientAPI {
     ServerCommands receiveCredentialResult() throws IOException;
 
     byte[] receiveSessionToken() throws IOException;
+
+    void sendSessionToken(byte[] sessionToken) throws IOException;
 }

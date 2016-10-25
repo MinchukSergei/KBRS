@@ -118,7 +118,10 @@ public class ClientAPIImpl implements ClientAPI {
         PublicKey publicKey = keyPair.getPublic();
 
         try {
-            sendRSAKey(publicKey);
+            boolean res = sendRSAKey(publicKey);
+            if (!res) {
+                return;
+            }
             mainFrame.getLogTextArea().append("Sending to server public RSA KEY\n");
             sessionKey = receiveSessionEncodedKey();
             if (sessionKey == null) {
@@ -186,9 +189,19 @@ public class ClientAPIImpl implements ClientAPI {
         return rsa.generateKeyPair();
     }
 
-    private void sendRSAKey(PublicKey key) throws IOException {
+    private boolean sendRSAKey(PublicKey key) throws IOException {
         toServer.write(ClientCommands.SEND_PUBLIC_RSA_KEY.getValue());
-        writeToServer(key.getEncoded());
+        sendSessionToken(getSessionToken());
+        int res = fromServer.read();
+        if (res == ServerCommands.INCORRECT_TOKEN.getValue()) {
+            JOptionPane.showMessageDialog(mainFrame, "Incorrect token.");
+            return false;
+        }
+        if (res == ServerCommands.CORRECT_TOKEN.getValue()) {
+            writeToServer(key.getEncoded());
+            return true;
+        }
+        return false;
     }
 
     public byte[] receiveSessionEncodedKey() throws IOException {
@@ -211,9 +224,18 @@ public class ClientAPIImpl implements ClientAPI {
             return false;
         }
         toServer.write(ClientCommands.SEND_FILENAME.getValue());
-        toServer.write(filename.getBytes().length);
-        toServer.write(filename.getBytes());
-        return true;
+        sendSessionToken(getSessionToken());
+        int res = fromServer.read();
+        if (res == ServerCommands.INCORRECT_TOKEN.getValue()) {
+            JOptionPane.showMessageDialog(mainFrame, "Incorrect token.");
+            return false;
+        }
+        if (res == ServerCommands.CORRECT_TOKEN.getValue()) {
+            toServer.write(filename.getBytes().length);
+            toServer.write(filename.getBytes());
+            return true;
+        }
+        return false;
     }
 
     public String receiveFile(String password) throws IOException, NoSuchAlgorithmException, SQLException, InvalidKeySpecException {
@@ -269,6 +291,10 @@ public class ClientAPIImpl implements ClientAPI {
     public byte[] receiveSessionToken() throws IOException {
         byte[] token = readFromServer();
         return token;
+    }
+
+    public void sendSessionToken(byte[] sessionToken) throws IOException {
+        writeToServer(sessionToken);
     }
 
     public ServerCommands receiveCredentialResult() throws IOException {

@@ -9,6 +9,7 @@ import server.impl.ServerAPIImpl;
 import sun.awt.windows.ThemeReader;
 import util.ClientCommands;
 import util.CredentialMessage;
+import util.ServerCommands;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +29,7 @@ import java.util.Random;
 public class ClientThread implements Runnable{
     private ServerAPIImpl serverAPI;
     private CredentialMessage credentialMessage;
+    private byte[] sessionToken;
 
     public ClientThread(ServerAPIImpl serverAPI) {
         System.out.println("Client " + serverAPI.getSocket().getPort() + " connected.");
@@ -60,6 +62,13 @@ public class ClientThread implements Runnable{
                 }
                 switch (target) {
                     case SEND_PUBLIC_RSA_KEY:
+                        byte[] sessTok = serverAPI.receiveSessionToken();
+                        if (!Arrays.equals(sessTok, sessionToken)) {
+                            serverAPI.sendResultCheckSessionToken(ServerCommands.INCORRECT_TOKEN);
+                            return;
+                        } else {
+                            serverAPI.sendResultCheckSessionToken(ServerCommands.CORRECT_TOKEN);
+                        }
                         System.out.println("Client " + serverAPI.getSocket().getPort() +
                                 " sends public RSA key.");
                         serverAPI.receivePublicRSAKey();
@@ -78,6 +87,13 @@ public class ClientThread implements Runnable{
                         serverAPI.sendKSData(rndNewKSData);
                         break;
                     case SEND_FILENAME:
+                        byte[] sessTok2 = serverAPI.receiveSessionToken();
+                        if (!Arrays.equals(sessTok2, sessionToken)) {
+                            serverAPI.sendResultCheckSessionToken(ServerCommands.INCORRECT_TOKEN);
+                            return;
+                        } else {
+                            serverAPI.sendResultCheckSessionToken(ServerCommands.CORRECT_TOKEN);
+                        }
                         System.out.println("Client " + serverAPI.getSocket().getPort() +
                                 " sends filename.");
                         String filename = serverAPI.receiveFilename();
@@ -108,8 +124,8 @@ public class ClientThread implements Runnable{
                                 }
                                 serverAPI.sendEncodedSessionKey();
                             } catch (SQLException ignored) {}
-                            byte[] token = SHA.generateSessionToken(credentialMessage);
-                            serverAPI.sendSessionToken(token);
+                            sessionToken = SHA.generateSessionToken(credentialMessage);
+                            serverAPI.sendSessionToken(sessionToken);
                             byte[] rndKSData = user.getUserKSData();
                             serverAPI.sendKSData(rndKSData);
                         }

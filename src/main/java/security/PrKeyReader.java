@@ -12,11 +12,12 @@ public class PrKeyReader {
     public static byte[] getPrKey(String login) throws FileNotFoundException {
         byte[] part1 = getFromSMARTCARD(login);
         byte[] part2 = getFromLocal(login);
-        ByteBuffer bb = ByteBuffer.allocate(part1.length + part2.length);
-        bb.put(part1);
-        bb.put(part2);
+        byte[] res = new byte[part1.length];
+        for (int i = 0; i < part1.length; i++) {
+            res[i] = (byte) (part1[i] ^ part2[i]);
+        }
 
-        return bb.array();
+        return res;
     }
 
     private static byte[] getFromLocal(String login) throws FileNotFoundException {
@@ -31,9 +32,9 @@ public class PrKeyReader {
         byte[] bytes = new byte[0];
         try {
             FileInputStream fs = new FileInputStream(p1);
-            bytes = new byte[700];
+            bytes = new byte[1300];
             firstFileLength = fs.read(bytes);
-            if (firstFileLength < 600) {
+            if (firstFileLength < 1200) {
                 throw new IOException(localFile + " is corrupted.");
             }
             fs.close();
@@ -59,9 +60,9 @@ public class PrKeyReader {
         int fileLength = 0;
         byte[] bytes = new byte[0];
         try {
-            bytes = new byte[700];
+            bytes = new byte[1300];
             fileLength = fis.read(bytes);
-            if (fileLength < 600) {
+            if (fileLength < 1200) {
                 throw new IOException(usb.toString() + usbFile + " is corrupted.");
             }
             fis.close();

@@ -9,6 +9,7 @@ import security.RSA;
 import security.SHA;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -17,52 +18,55 @@ import java.util.Random;
 
 public class Main {
     public static void main(String[] args) {
-        ClassLoader loader = ClassLoader.getSystemClassLoader();
-        File f = new File(loader.getResource("pr_key/pes_KBRS").getFile());
-        File f2 = new File(loader.getResource("pr_key/pes_KBRS2").getFile());
-
-        RSA rsa = new RSA();
-        rsa.initCipher(CryptoSystem.RSA);
-        KeyPair kp = rsa.generateKeyPair();
-        PublicKey pk = kp.getPublic();
-        PrivateKey prk = kp.getPrivate();
-
-
-        byte[] encPk = pk.getEncoded();
-        DAOuser daOuser = new DAOuserImpl();
-        User u = new User();
-        u.setUserLogin("pes");
-        u.setUserDSPubKey(encPk);
-        try {
-            daOuser.setDSPubKey(u);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        byte[] encPrk = prk.getEncoded();
-        byte[] rnd = new byte[encPrk.length];
-        new Random().nextBytes(rnd);
-
-        byte[] result = new byte[encPrk.length];
-
-        for (int i = 0; i < encPrk.length; i++) {
-            result[i] = (byte)(encPrk[i] ^ rnd[i]);
-        }
-
-
-
-        try {
-            FileOutputStream fis = new FileOutputStream(f);
-            FileOutputStream fis2 = new FileOutputStream(f2);
-            fis.write(result);
-            fis2.write(rnd);
-            fis.close();
-            fis2.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        byte[] g = SHA.hash("11111");
+        String s = String.format("%064x", new BigInteger(1, g));
+        int y = 0;
+//        ClassLoader loader = ClassLoader.getSystemClassLoader();
+//        File f = new File(loader.getResource("pr_key/pes_KBRS").getFile());
+//        File f2 = new File(loader.getResource("pr_key/pes_KBRS2").getFile());
+//
+//        RSA rsa = new RSA();
+//        rsa.initCipher(CryptoSystem.RSA);
+//        KeyPair kp = rsa.generateKeyPair();
+//        PublicKey pk = kp.getPublic();
+//        PrivateKey prk = kp.getPrivate();
+//
+//
+//        byte[] encPk = pk.getEncoded();
+//        DAOuser daOuser = new DAOuserImpl();
+//        User u = new User();
+//        u.setUserLogin("pes");
+//        u.setUserDSPubKey(encPk);
+//        try {
+//            daOuser.setDSPubKey(u);
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//
+//        byte[] encPrk = prk.getEncoded();
+//        byte[] rnd = new byte[encPrk.length];
+//        new Random().nextBytes(rnd);
+//
+//        byte[] result = new byte[encPrk.length];
+//
+//        for (int i = 0; i < encPrk.length; i++) {
+//            result[i] = (byte)(encPrk[i] ^ rnd[i]);
+//        }
+//
+//
+//
+//        try {
+//            FileOutputStream fis = new FileOutputStream(f);
+//            FileOutputStream fis2 = new FileOutputStream(f2);
+//            fis.write(result);
+//            fis2.write(rnd);
+//            fis.close();
+//            fis2.close();
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
 
 //        byte[] b = SHA.hash("11111");
@@ -89,7 +93,7 @@ public class Main {
 //        String r = new String(res);
 
         //DCyBnUnQJ82eb/LUrFSKHPJQVry/O2Dxeeyi3PnTqCw=
-        int y = 0;
+
 //        try {
 //            byte[] prKeyBytes = PrKeyReader.getPrKey("pes");
 //            try {

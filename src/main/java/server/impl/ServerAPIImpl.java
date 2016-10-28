@@ -98,10 +98,6 @@ public class ServerAPIImpl implements ServerAPI {
     }
 
     public void sendEncodedFile(String filename) throws IOException {
-        if (sessionKey == null) {
-            toClient.write(ServerCommands.SESSION_KEY_IS_NULL.getValue());
-            return;
-        }
         Path currentRelativePath = Paths.get("");
         String absolutePath = currentRelativePath.toAbsolutePath().toString();
         String fullFileName = absolutePath + "\\testFiles\\" + filename;
@@ -116,6 +112,7 @@ public class ServerAPIImpl implements ServerAPI {
                 AES aes = new AES();
                 aes.initCipher(CryptoSystem.AES_CBC);
 
+                sendEncodedSessionKey();
 
                 InputStream fileStream = new FileInputStream(file);
                 byte[] partFile = new byte[ServerCommands.SERVER_PART_FILE_LENGTH.getValue()];

@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Created by USER on 25.09.2016.
@@ -21,6 +22,15 @@ import java.sql.SQLException;
 public class ControlButtonsListeners {
     private ClientGui mainFrame;
     private ClientAPIImpl clientAPI;
+    private List<JButton> controlButtons;
+
+    public List<JButton> getControlButtons() {
+        return controlButtons;
+    }
+
+    public void setControlButtons(List<JButton> controlButtons) {
+        this.controlButtons = controlButtons;
+    }
 
     public ClientGui getMainFrame() {
         return mainFrame;
@@ -50,18 +60,21 @@ public class ControlButtonsListeners {
         };
     }
 
-    public ActionListener getLoginButtonListener(final JButton button) {
+    public ActionListener getLoginButtonListener() {
         return new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (clientAPI.getAuthenticated() != null) {
                     clientAPI.setAuthenticated(null);
-                    button.setText("Login");
+                    controlButtons.get(0).setText("Login");
                     JOptionPane.showMessageDialog(mainFrame, "You have successfully log out.");
+                    for (int i = 1; i < controlButtons.size(); i++) {
+                        controlButtons.get(i).setVisible(false);
+                    }
                     return;
                 }
                 LoginFrame loginFrame = new LoginFrame("Login");
                 loginFrame.setClientAPI(clientAPI);
-                loginFrame.setParentButton(button);
+                loginFrame.setButtons(controlButtons);
                 String[] labels = {"Login", "Password"};
                 JTextField[] textFields = {new JTextField(), new JPasswordField()};
                 loginFrame.createAndShowGUI(labels, textFields);

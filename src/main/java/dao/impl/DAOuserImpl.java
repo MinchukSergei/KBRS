@@ -77,9 +77,7 @@ public class DAOuserImpl implements DAOuser {
         Connection connection = mySQLconnector.getConnection();
         PreparedStatement statement = connection.prepareStatement(GET_USER);
         statement.setString(1, user.getUserLogin());
-        try {
-            statement.setString(2, new String(user.getUserPassword(), "UTF-8"));
-        } catch (UnsupportedEncodingException ignored) {}
+        statement.setString(2, String.format("%064x", new java.math.BigInteger(1, user.getUserPassword())));
         ResultSet rs = statement.executeQuery();
 
         if (rs.next()) {

@@ -94,10 +94,14 @@ public class ClientGui extends JFrame {
         for (int i = 0; i < buttonLabels.length; i++) {
             controlButtons.add(new JButton(buttonLabels[i]));
             controlPanel.add(controlButtons.get(i));
+            if (i > 0) {
+                controlButtons.get(i).setVisible(false);
+            }
         }
 
+        c.setControlButtons(controlButtons);
         ActionListener[] buttonListeners = {
-                c.getLoginButtonListener(controlButtons.get(0)),
+                c.getLoginButtonListener(),
                 c.getGenerateRSAKeyButtonListener(),
                 c.getSendFilenameButtonListener()
         };

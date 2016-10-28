@@ -72,9 +72,6 @@ public class ClientThread implements Runnable{
                         System.out.println("Client " + serverAPI.getSocket().getPort() +
                                 " sends public RSA key.");
                         serverAPI.receivePublicRSAKey();
-                        System.out.println("Sending  to Client " + serverAPI.getSocket().getPort() +
-                                " encoded session key.");
-                        serverAPI.sendEncodedSessionKey();
                         byte[] rndNewKSData = new byte[32];
                         new Random().nextBytes(rndNewKSData);
                         DAOuser daouser = new DAOuserImpl();
@@ -101,6 +98,7 @@ public class ClientThread implements Runnable{
                             System.out.println("Can't receive filename from client.");
                             System.exit(0);
                         }
+
                         serverAPI.sendEncodedFile(filename);
                         System.out.println("Server sending to Client " + serverAPI.getSocket().getPort() +
                                 " encoded file.");
@@ -122,7 +120,6 @@ public class ClientThread implements Runnable{
                                 if (user.getUserPubKey() != null) {
                                     serverAPI.setPublicKey(KeyFactory.getInstance(CryptoSystem.RSA).generatePublic(new X509EncodedKeySpec(user.getUserPubKey())));
                                 }
-                                serverAPI.sendEncodedSessionKey();
                             } catch (SQLException ignored) {}
                             sessionToken = SHA.generateSessionToken(credentialMessage);
                             serverAPI.sendSessionToken(sessionToken);

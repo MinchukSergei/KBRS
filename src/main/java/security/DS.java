@@ -19,7 +19,7 @@ public class DS {
 
     public static CredentialMessage signCredentials(String login, String password, PrivateKey privateKey) {
         byte[] loginBytes = login.getBytes();
-        byte[] hashedPassword = MD5.hashMd5(password).getBytes();
+        byte[] hashedPassword = SHA.hash(password);
         ByteBuffer loginPass = ByteBuffer.allocate(loginBytes.length + hashedPassword.length);
         loginPass.put(loginBytes);
         loginPass.put(hashedPassword);

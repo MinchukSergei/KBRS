@@ -22,6 +22,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by USER on 25.09.2016.
@@ -30,14 +31,14 @@ public class LoginFrame extends ActionFrame {
     public LoginFrame(String title) {
         super(title);
     }
-    private JButton parentButton;
+    private List<JButton> buttons;
 
-    public JButton getParentButton() {
-        return parentButton;
+    public List<JButton> getButtons() {
+        return buttons;
     }
 
-    public void setParentButton(JButton parentButton) {
-        this.parentButton = parentButton;
+    public void setButtons(List<JButton> buttons) {
+        this.buttons = buttons;
     }
 
     @Override
@@ -55,42 +56,8 @@ public class LoginFrame extends ActionFrame {
                     return;
                 }
 
-//                DAOuser daOuser = new DAOuserImpl();
-//                User user = new User();
-//                user.setUserLogin("pes");
-//                user.setUserDSPubKey(clientAPI.getDSKeyPair().getPublic().getEncoded());
-//                try {
-//                    daOuser.setDSPubKey(user);
-//                } catch (SQLException ignored) {
-//
-//                }
-//                byte[] prBytes = clientAPI.getDSKeyPair().getPrivate().getEncoded();
-//                ClassLoader loader = ClassLoader.getSystemClassLoader();
-//                URL url1 = loader.getResource("pr_key/pes_KBRS");
-//                URL url2 = loader.getResource("pr_key/pes_KBRS2");
-//                File p1 = new File(url1.getFile());
-//                File p2 = new File(url2.getFile());
-//                try {
-//                    FileOutputStream fs = new FileOutputStream(p1);
-//                    fs.write(Arrays.copyOfRange(prBytes, 0, 600));
-//                    fs.close();
-//                    fs = new FileOutputStream(p2);
-//                    fs.write(Arrays.copyOfRange(prBytes, 600, prBytes.length));
-//                    fs.close();
-//                } catch (FileNotFoundException e1) {
-//                    e1.printStackTrace();
-//                } catch (IOException e1) {
-//                    e1.printStackTrace();
-//                }
-
-
-                //daOuser.setPubKey(clientAPI.getDSKeyPair().getPublic());
-
-
-
                 CredentialMessage credentialMessage = null;
                 try {
-                    //clientAPI.sendDSPublicKey(clientAPI.getDSKeyPair().getPublic());
                     String login = loginField.getText();
                     String password = passwordField.getText();
                     PrivateKey pk = null;
@@ -110,21 +77,14 @@ public class LoginFrame extends ActionFrame {
                     clientAPI.sendCredentials(credentialMessage);
                     ServerCommands result = clientAPI.receiveCredentialResult();
                     if (result.equals(ServerCommands.INCORRECT_CREDENTIALS)) {
-                        JOptionPane.showMessageDialog(LoginFrame.this, "Incorrect credentials.");
+                        JOptionPane.showMessageDialog(LoginFrame.this, "Invalid credentials.");
                         return;
                     }
                     if (result.equals(ServerCommands.INCORRECT_SIGN)) {
-                        JOptionPane.showMessageDialog(LoginFrame.this, "Incorrect sign.");
+                        JOptionPane.showMessageDialog(LoginFrame.this, "Invalid credentials.");
                         return;
                     }
 
-                    byte [] sessionKey = clientAPI.receiveSessionEncodedKey();
-                    if (sessionKey == null) {
-                        JOptionPane.showMessageDialog(clientAPI.getMainFrame(), "Generate new RSA key.");
-                        return;
-                    } else {
-                        clientAPI.setSessionKey(sessionKey);
-                    }
                     User auth = new User();
                     auth.setUserLogin(credentialMessage.getLogin());
                     auth.setUserPassword(credentialMessage.getPassword());
@@ -140,7 +100,10 @@ public class LoginFrame extends ActionFrame {
                     clientAPI.setKsData(ksData);
                     clientAPI.setPsw(password);
                     clientAPI.setKsPass(clientAPI.getKSData(ksData, password));
-                    parentButton.setText("Logout");
+                    for (int i = 1; i < getButtons().size(); i++) {
+                        getButtons().get(i).setVisible(true);
+                    }
+                    getButtons().get(0).setText("Logout");
                 } catch (IOException ignored) {
                 }
 

@@ -30,7 +30,6 @@ public class ClientAPIImpl implements ClientAPI {
     private int attemptCount = 3;
     private Socket socket;
     private User authenticated;
-    private byte[] sessionKey;
     private byte[] sessionToken;
     private byte[] ksData;
     private String psw;
@@ -101,14 +100,6 @@ public class ClientAPIImpl implements ClientAPI {
         this.socket = socket;
     }
 
-    public byte[] getSessionKey() {
-        return sessionKey;
-    }
-
-    public void setSessionKey(byte[] sessionKey) {
-        this.sessionKey = sessionKey;
-    }
-
     public void sendKeyAndReceiveSessionKey() {
         if (socket == null) {
             JOptionPane.showMessageDialog(mainFrame, "Server is not available.");
@@ -123,21 +114,12 @@ public class ClientAPIImpl implements ClientAPI {
                 return;
             }
             mainFrame.getLogTextArea().append("Sending to server public RSA KEY\n");
-            sessionKey = receiveSessionEncodedKey();
-            if (sessionKey == null) {
-                JOptionPane.showMessageDialog(mainFrame, "Generate new RSA key.");
-                return;
-            }
             mainFrame.getLogTextArea().append("Receiving from server encoded session key\n");
         } catch (IOException e) {
             mainFrame.getLogTextArea().append(e.getMessage() + "\n");
             return;
         }
         DAOuser daOuser = new DAOuserImpl();
-        if (sessionKey == null) {
-            JOptionPane.showConfirmDialog(mainFrame, "Session key wasn't received.");
-            return;
-        }
         authenticated.setUserPubKey(publicKey.getEncoded());
 
         String keyStorePass = "";
@@ -339,9 +321,10 @@ public class ClientAPIImpl implements ClientAPI {
         }
 
         toServer.write(ClientCommands.CORRECT_FILE_RECEIVING.getValue());
+        byte [] encodedSessionKey = receiveSessionEncodedKey();
         RSA rsa = new RSA();
         rsa.initCipher(CryptoSystem.RSA);
-        byte[] decodedSessionKey = rsa.decode(sessionKey, privateKey);
+        byte[] decodedSessionKey = rsa.decode(encodedSessionKey, privateKey);
 
         //AES aes1 = new AES();
         aes.initCipher(CryptoSystem.AES_CBC);

@@ -1,12 +1,12 @@
 package server.impl;
 
+import com.sun.mail.iap.ByteArray;
+import dao.DAOFile;
 import dao.DAOuser;
+import dao.impl.DAOFileImpl;
 import dao.impl.DAOuserImpl;
 import entities.User;
-import security.AES;
-import security.CryptoSystem;
-import security.DS;
-import security.RSA;
+import security.*;
 import server.ServerAPI;
 import util.ClientCommands;
 import util.CredentialMessage;
@@ -19,13 +19,12 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.InvalidKeyException;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
+import java.security.*;
+import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 /**
  * Created by USER on 25.09.2016.
@@ -33,10 +32,19 @@ import java.sql.SQLException;
 public class ServerAPIImpl implements ServerAPI {
     private PublicKey publicKey;
     private SecretKey sessionKey;
+    private PublicKey publicDSKey;
     private Socket socket;
 
     private InputStream fromClient;
     private OutputStream toClient;
+
+    public PublicKey getPublicDSKey() {
+        return publicDSKey;
+    }
+
+    public void setPublicDSKey(PublicKey publicDSKey) {
+        this.publicDSKey = publicDSKey;
+    }
 
     public void setFromClient(InputStream fromClient) {
         this.fromClient = fromClient;
@@ -98,11 +106,23 @@ public class ServerAPIImpl implements ServerAPI {
     }
 
     public void sendEncodedFile(String filename) throws IOException {
-        Path currentRelativePath = Paths.get("");
-        String absolutePath = currentRelativePath.toAbsolutePath().toString();
-        String fullFileName = absolutePath + "\\testFiles\\" + filename;
-        File file = new File(fullFileName);
-        if (file.exists()) {
+//        Path currentRelativePath = Paths.get("");
+//        String absolutePath = currentRelativePath.toAbsolutePath().toString();
+//        String fullFileName = absolutePath + "\\testFiles\\" + filename;
+        //File file = new File(fullFileName);
+        boolean fileExists = true;
+        DAOFile daoFile = new DAOFileImpl();
+        byte[] encFile = new byte[0];
+        try {
+            encFile = daoFile.getFileByName(filename, true);
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            fileExists = false;
+        }
+        if (encFile.length == 0) {
+            fileExists = false;
+        }
+        if (fileExists) {
             toClient.write(ServerCommands.FILE_EXISTS.getValue());
             int error = fromClient.read();
             if (error == ClientCommands.ERROR_FILE_RECEIVING.getValue()) {
@@ -110,23 +130,23 @@ public class ServerAPIImpl implements ServerAPI {
             }
             if (error == ClientCommands.CORRECT_FILE_RECEIVING.getValue()) {
                 AES aes = new AES();
-                aes.initCipher(CryptoSystem.AES_CBC);
-
-                sendEncodedSessionKey();
-
-                InputStream fileStream = new FileInputStream(file);
-                byte[] partFile = new byte[ServerCommands.SERVER_PART_FILE_LENGTH.getValue()];
-
-                byte[] iv = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-                IvParameterSpec ivspec = new IvParameterSpec(iv);
-                while (fileStream.read(partFile) != -1) {
-                    byte[] encPartFile = aes.encode(partFile, sessionKey, ivspec);
-                    toClient.write(encPartFile.length);
-                    toClient.write(encPartFile);
+                aes.initCipher(CryptoSystem.AES);
+                RSA rsa = new RSA();
+                rsa.initCipher(CryptoSystem.RSA);
+                SecretKey key = null;
+                try {
+                    key = KeyStoreServerFileUtils.readEntry(filename);
+                } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | UnrecoverableEntryException e) {
+                    System.err.println(e.getMessage());
                 }
-                toClient.write(0);
-                toClient.write(ServerCommands.END_OF_FILE.getValue());
-                fileStream.close();
+                byte[] encWithPubKey = rsa.encode(key.getEncoded(), publicKey);
+                byte[] firstPart = Arrays.copyOfRange(encWithPubKey, 0, 245);
+                byte[] secondPart = Arrays.copyOfRange(encWithPubKey, 245, encWithPubKey.length);
+                byte[] encWithPubDSKeyFirstPart = rsa.encode(firstPart, publicDSKey);
+                byte[] encWithPubDSKeySecondPart = rsa.encode(secondPart, publicDSKey);
+                writeToClient(encWithPubDSKeyFirstPart);
+                writeToClient(encWithPubDSKeySecondPart);
+                writeToClient(encFile);
             }
         } else {
             toClient.write(ServerCommands.FILE_NOT_FOUND.getValue());

@@ -117,6 +117,7 @@ public class ClientThread implements Runnable{
                             user.setUserLogin(credentialMessage.getLogin());
                             try {
                                 daOuser.getKeys(user);
+                                serverAPI.setPublicDSKey(KeyFactory.getInstance(CryptoSystem.RSA).generatePublic(new X509EncodedKeySpec(user.getUserDSPubKey())));
                                 if (user.getUserPubKey() != null) {
                                     serverAPI.setPublicKey(KeyFactory.getInstance(CryptoSystem.RSA).generatePublic(new X509EncodedKeySpec(user.getUserPubKey())));
                                 }

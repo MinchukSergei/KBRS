@@ -2,9 +2,13 @@ package client.gui;
 
 import client.gui.action_frames.LoginFrame;
 import client.gui.action_frames.RegisterFrame;
+import client.gui.action_frames.StorageFrame;
 import client.impl.ClientAPIImpl;
+import dao.DAOFile;
+import dao.impl.DAOFileImpl;
 import org.apache.commons.lang3.StringUtils;
 import security.Base64;
+import security.FileEncrypter;
 import security.SHA;
 
 import javax.swing.*;
@@ -114,16 +118,12 @@ public class ControlButtonsListeners {
                     JOptionPane.showMessageDialog(mainFrame, "Fill filename.");
                     return;
                 }
-
                 try {
-
                     if (clientAPI.sendFilename(filename)) {
-
                         String receivedFile = clientAPI.receiveFile(clientAPI.getKsPass());
                         if (receivedFile != null) {
-                            FileFrame fileFrame = new FileFrame(filename);
-                            fileFrame.appendText(receivedFile);
-                            fileFrame.setDefaultSettings();
+                            FileEncrypter fileEncrypter = new FileEncrypter();
+                            fileEncrypter.saveFileToClient(filename, receivedFile);
                         }
                     }
                 } catch (IOException e1) {
@@ -135,6 +135,24 @@ public class ControlButtonsListeners {
                 } catch (InvalidKeySpecException e1) {
                     JOptionPane.showMessageDialog(mainFrame, e1.getMessage());
                 }
+            }
+        };
+    }
+
+    public ActionListener getLocalStorage() {
+        return new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                StorageFrame storageFrame = new StorageFrame("Storage");
+                DAOFile daoFile = new DAOFileImpl();
+                try {
+                    String [] filenames = daoFile.getFilenames(false);
+                    storageFrame.setFilenames(filenames);
+                    storageFrame.setGui();
+                } catch (SQLException e1) {
+                    JOptionPane.showMessageDialog(null, e1.getMessage());
+                }
+
             }
         };
     }

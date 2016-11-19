@@ -10,6 +10,7 @@ import util.ClientCommands;
 import util.CredentialMessage;
 import util.ServerCommands;
 
+import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.swing.*;
@@ -17,11 +18,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 /**
  * Created by USER on 24.09.2016.
@@ -34,11 +37,20 @@ public class ClientAPIImpl implements ClientAPI {
     private byte[] ksData;
     private String psw;
     private String ksPass;
+    private PrivateKey privateDSKey;
 
     private InputStream fromServer;
     private OutputStream toServer;
 
     private ClientGui mainFrame;
+
+    public PrivateKey getPrivateDSKey() {
+        return privateDSKey;
+    }
+
+    public void setPrivateDSKey(PrivateKey privateDSKey) {
+        this.privateDSKey = privateDSKey;
+    }
 
     public String getKsPass() {
         return ksPass;
@@ -232,6 +244,7 @@ public class ClientAPIImpl implements ClientAPI {
                 return null;
             case FILE_EXISTS:
                 file = receiveAndDecodeFile(authenticated.getUserLogin(), password);
+
                 break;
             case FILE_NOT_FOUND:
                 JOptionPane.showMessageDialog(mainFrame, "File not found");
@@ -239,6 +252,7 @@ public class ClientAPIImpl implements ClientAPI {
         }
         return file;
     }
+
 
 //    public void sendDSPublicKey(PublicKey publicKey) throws IOException {
 //        toServer.write(ClientCommands.SEND_DS_PUBLIC_KEY.getValue());
@@ -299,54 +313,35 @@ public class ClientAPIImpl implements ClientAPI {
 
     private String receiveAndDecodeFile(String alias, String password) throws IOException, SQLException, NoSuchAlgorithmException {
         mainFrame.getLogTextArea().append("Encoding file from server.\n");
-        StringBuffer buffer = new StringBuffer();
-        AES aes = new AES();
-        aes.initCipher(CryptoSystem.AES);
 
         PrivateKey privateKey = null;
         try {
             privateKey = KeyStoreUtils.readEntry(alias, password);
-        } catch (KeyStoreException e) {
+        } catch (KeyStoreException | CertificateException | UnrecoverableEntryException e) {
             toServer.write(ClientCommands.ERROR_FILE_RECEIVING.getValue());
             JOptionPane.showMessageDialog(mainFrame, e.getMessage());
-            return null;
-        } catch (CertificateException e) {
-            toServer.write(ClientCommands.ERROR_FILE_RECEIVING.getValue());
-            JOptionPane.showMessageDialog(mainFrame, e.getMessage());
-            return null;
-        } catch (UnrecoverableEntryException e) {
-            toServer.write(ClientCommands.ERROR_FILE_RECEIVING.getValue());
-            JOptionPane.showMessageDialog(mainFrame, "Your pin is incorrect.");
             return null;
         }
 
         toServer.write(ClientCommands.CORRECT_FILE_RECEIVING.getValue());
-        byte [] encodedSessionKey = receiveSessionEncodedKey();
         RSA rsa = new RSA();
         rsa.initCipher(CryptoSystem.RSA);
-        byte[] decodedSessionKey = rsa.decode(encodedSessionKey, privateKey);
+        AES aes = new AES();
+        aes.initCipher(CryptoSystem.AES);
+        byte[] encWithPubDSKeyFirstPart = readFromServer();
+        byte[] encWithPubDSKeySecondPart = readFromServer();
+        byte[] encFile = readFromServer();
 
-        //AES aes1 = new AES();
-        aes.initCipher(CryptoSystem.AES_CBC);
-        while (true) {
-            int size = fromServer.read();
-            if (size == 0) {
-                int eof = fromServer.read();
-                if (eof == ServerCommands.END_OF_FILE.getValue()) {
-                    return buffer.toString();
-                } else {
-                    return null;
-                }
-            }
-            byte[] encPartFile = new byte[size];
-            byte[] iv = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-            IvParameterSpec ivspec = new IvParameterSpec(iv);
+        byte[] encWithPubKeyFirstPart = rsa.decode(encWithPubDSKeyFirstPart, privateDSKey);
+        byte[] encWithPubKeySecondPart = rsa.decode(encWithPubDSKeySecondPart, privateDSKey);
 
-            fromServer.read(encPartFile, 0, size);
+        byte[] encWithPubKey = new byte[encWithPubKeyFirstPart.length + encWithPubKeySecondPart.length];
+        System.arraycopy(encWithPubKeyFirstPart, 0, encWithPubKey, 0, encWithPubKeyFirstPart.length);
+        System.arraycopy(encWithPubKeySecondPart, 0, encWithPubKey, encWithPubKeyFirstPart.length, encWithPubKeySecondPart.length);
 
-            String partFileString = new String(aes.decode(encPartFile,
-                    new SecretKeySpec(decodedSessionKey, CryptoSystem.AES), ivspec));
-            buffer.append(partFileString);
-        }
+        byte[] sessionKey = rsa.decode(encWithPubKey, privateKey);
+        SecretKey sk = new SecretKeySpec(sessionKey, CryptoSystem.AES);
+        String file = new String(aes.decode(encFile, sk));
+        return file;
     }
 }

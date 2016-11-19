@@ -3,10 +3,7 @@ package client.gui.action_frames;
 import dao.DAOuser;
 import dao.impl.DAOuserImpl;
 import entities.User;
-import security.CryptoSystem;
-import security.DS;
-import security.PrKeyReader;
-import security.RSA;
+import security.*;
 import util.CredentialMessage;
 import util.ServerCommands;
 
@@ -64,6 +61,7 @@ public class LoginFrame extends ActionFrame {
                     try {
                         byte[] pkBytes = PrKeyReader.getPrKey(login);
                         pk = KeyFactory.getInstance(CryptoSystem.RSA).generatePrivate(new PKCS8EncodedKeySpec(pkBytes));
+                        clientAPI.setPrivateDSKey(pk);
                     } catch (NoSuchAlgorithmException ignored) {
                     } catch (InvalidKeySpecException e1) {
                         JOptionPane.showMessageDialog(LoginFrame.this, "Incorrect private key. Your local file or smart card are invalid.");
@@ -105,6 +103,13 @@ public class LoginFrame extends ActionFrame {
                     }
                     getButtons().get(0).setText("Logout");
                 } catch (IOException ignored) {
+                }
+
+                try {
+                    JOptionPane.showMessageDialog(LoginFrame.this, StoragePasswordManager.getStoragePassword());
+                } catch (FileNotFoundException e1) {
+                    JOptionPane.showMessageDialog(LoginFrame.this, e1.getMessage());
+                    return;
                 }
 
                 int n = JOptionPane.showConfirmDialog(
